@@ -1,7 +1,7 @@
 ---
 name: skill-authoring
 display: Rédiger une compétence
-description: À utiliser lorsque l'utilisateur souhaite créer, importer ou modifier une compétence (une méthode récurrente pour un type de tâche) : comment l'écrire, vérifier les doublons et l'enregistrer
+description: "À utiliser lorsque l'utilisateur souhaite créer, importer ou modifier une compétence (une méthode récurrente pour un type de tâche) : comment l'écrire, vérifier les doublons et l'enregistrer"
 aliases: ["créer une compétence", "nouvelle compétence", "écrire une compétence", "enregistrer une compétence", "importer une compétence", "modifier une compétence", "skill"]
 terms: ["compétence", "méthode", "processus", "étapes", "modèle", "faire comme ça à l'avenir", "enregistrer en compétence", "importer", "réécrire"]
 ---

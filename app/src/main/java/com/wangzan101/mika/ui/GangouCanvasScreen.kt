@@ -363,7 +363,7 @@ fun GangouCanvasScreen(
                         setBackgroundColor(android.graphics.Color.parseColor("#050811"))
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
-                        addJavascriptInterface(GangouJsBridge(ctx.applicationContext, onAskAi, onOpenSettings), onRunLinux, "GangouBridge")
+                        addJavascriptInterface(GangouJsBridge(ctx.applicationContext, onAskAi, onOpenSettings, onRunLinux), "GangouBridge")
                         @Suppress("DEPRECATION")
                         settings.databaseEnabled = true
                         settings.useWideViewPort = true

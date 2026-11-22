@@ -195,7 +195,9 @@ internal class CanvasCapability : Capability {
         ### Pont direct Toile ↔ Noyau (`window.GangouBridge` & `window.onGangouEvent`)
         - `GangouBridge.ask(prompt)` : envoie une demande à l'IA directement depuis un bouton de la toile.
         - `GangouBridge.runLinux(cmd, callbackName)` : exécute une commande shell dans le bac à sable Linux et appelle `window[callbackName]({exitCode, output, timedOut})` avec la sortie réelle (sans consommer de tokens IA !).
-        - `GangouBridge.undo()` / `redo()` / `reset()` / `openSettings()` / `saveSpace(nom)` / `loadSpace(nom)` / `listSpaces()`.
+        - `GangouBridge.complete(prompt, callbackName, systemPrompt)` : interroge directement le modèle IA configuré (avec failover automatique) et appelle `window[callbackName]({ok, text, error})` sans modifier la toile.
+- `GangouBridge.kvSet(key, value)` / `kvGet(key)` / `kvDelete(key)` / `kvList()` : mémoire clé-valeur JSON persistante sur le téléphone, conservée même si on change d'espace ou réinitialise la toile.
+- `GangouBridge.undo()` / `redo()` / `reset()` / `openSettings()` / `saveSpace(nom)` / `loadSpace(nom)` / `listSpaces()`.
         - `window.onGangouEvent = (evt) => { ... }` : reçoit en direct `{type: 'status', busy: true|false}` dès que l'IA commence ou finit une tâche.
         """.trimIndent()
     )

@@ -73,7 +73,8 @@ object GangouCanvasState {
     var canUndo by mutableStateOf(false)
     var canRedo by mutableStateOf(false)
     var webViewRef: WebView? = null
-
+    var pendingOpenSettings by mutableStateOf(false)
+    
     private fun rootDir(ctx: Context): File = File(ctx.filesDir, "gangou_canvas").apply { if (!exists()) mkdirs() }
     private fun currentFile(ctx: Context): File = File(rootDir(ctx), "current.html")
     private fun metaFile(ctx: Context): File = File(rootDir(ctx), "meta.json")

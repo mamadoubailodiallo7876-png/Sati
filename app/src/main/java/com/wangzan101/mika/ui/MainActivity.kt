@@ -323,7 +323,6 @@ private fun MikaRoot(
     val app = context.applicationContext as MikaApp
     // 查到的新版本:侧栏、设置首页、关于页的红点都看它
     val updateState by app.updates.state.collectAsState()
-var showFullChat by remember { mutableStateOf(false) }
 val gangouChatUi by app.chat.ui.collectAsState()
     LaunchedEffect(requestedConversation) {
         if (requestedConversation != null) {
@@ -386,7 +385,7 @@ registerAndroidCanvasPort(appContext)
     // 聊天页离开组合树时保留列表位置和输入内容，返回设置页等子页面后原样恢复。
     val screenStates = rememberSaveableStateHolder()
     when (nav.current) {
-       Route.CreatorPlugins -> CreatorPluginsScreen(onBack = back)
+       Route.CreatorPlugins -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onSendPrompt = { txt -> app.chat.send(txt, check) }, onOpenSettings = { nav.pushFromDrawer(Route.Settings) })
         Route.PhoneSetup -> PhoneSetupScreen(status, setupRepair, onFix, onboarding = onboarding == OnboardingStep.Phone) {
             phoneSetup.markGuideSeen()
             if (onboarding == OnboardingStep.Phone) goOnboarding(null) else nav.back()
@@ -405,65 +404,11 @@ registerAndroidCanvasPort(appContext)
                 },
             )
         }
-        Route.Chat -> screenStates.SaveableStateProvider(Route.Chat.name) {
-            // 对话页重新看得见(回到前台、从别的页面回来):补上别处存进来的轮次,接上别处开始的任务
-            LifecycleStartEffect(Unit) {
-                app.chat.refresh()
-                onStopOrDispose {}
-            }
-if (!showFullChat) {
-GangouCanvasScreen(
-isBusy = gangouChatUi.composer == ComposerMode.Busy,
-onSendPrompt = { txt -> app.chat.send(txt, check) },
-onOpenFullChat = { showFullChat = true },
-onOpenSettings = { nav.pushFromDrawer(Route.Settings) },
-onOpenBrowser = { nav.pushFromDrawer(Route.Browser) },
-)
-} else {
-BackHandler(enabled = showFullChat) { showFullChat = false }
-            ChatWithDrawer(
-                vm = app.chat,
-                check = check,
-                reduceMotion = MikaTheme.reduceMotion,
-                conversations = { ConversationStore.shared(context).list() },
-                conversationChanges = ConversationStore.shared(context).changes,
-                conversationTitle = { ConversationStore.shared(context).title(it) },
-                onPlugins = { nav.pushFromDrawer(Route.CreatorPlugins) },
-                onPlans = { nav.pushFromDrawer(Route.Plans) },
-                onMemory = { nav.pushFromDrawer(Route.Memory) },
-                onSettings = { nav.pushFromDrawer(Route.Settings) },
-                onBrowser = { nav.pushFromDrawer(Route.Browser) },
-                onScreens = { nav.pushFromDrawer(Route.Screens) },
-                onAbout = { nav.pushFromDrawer(Route.About) },
-                updateAvailable = AboutCopy.drawerDot(updateState),
-                reopen = nav.reopenDrawer,
-                onReopened = nav::drawerReopened,
-            ) { openDrawer ->
-                ChatScreen(
-                    vm = app.chat,
-                    check = check,
-                    frames = app.taskState.frames,
-                    webOpen = app.tasks.webScreenOpen,
-                    reduceMotion = MikaTheme.reduceMotion,
-                    onOpenDrawer = openDrawer,
-                    openSettings = { nav.push(Route.Settings) },
-                    openRun = { runId = it; nav.push(Route.Run) },
-                    phoneSetupNeeded = phoneSetupNeeded && status.builtinShell != BuiltinShellStatus.Running,
-                    openPhoneSetup = { onFix(Fix.OpenPhoneSetup) },
-                    loadSource = { id ->
-                        withContext(Dispatchers.IO) { evidenceSource(RunStore(context).events(id)) { ConfirmationNotifier.appLabel(context, it) } }
-                    },
-                    openSource = { id, legacy ->
-                        sourceRunId = id
-                        sourceLegacyText = legacy
-                        nav.push(Route.Source)
-                    },
-                    voice = app.voice,
-                    openSpeechModel = { nav.push(Route.SpeechModel) },
-                )
-            }
-        }
-        }
+        Route.Chat -> GangouCanvasScreen(
+                        isBusy = gangouChatUi.composer == ComposerMode.Busy,
+                        onSendPrompt = { txt -> app.chat.send(txt, check) },
+                        onOpenSettings = { nav.pushFromDrawer(Route.Settings) },
+                    )
         Route.Settings -> {
             val autonomous by app.approvals.autonomous.collectAsState()
             SettingsScreen(store, status, release, onFix, onBack = back, onOpenMemory = { nav.push(Route.Memory) },
@@ -495,68 +440,7 @@ BackHandler(enabled = showFullChat) { showFullChat = false }
             },
         )
         Route.License -> LicensesScreen(onBack = back)
-        Route.Browser -> BrowserScreen(remember { UserBrowser.of(context) }, onBack = back)
-        Route.Memory -> {
-            val registry = remember { WebSites.registry(context) }
-            val sites by registry.entries.collectAsState()
-            val webSites = WebSitesState(
-                sites = sites,
-                onOpenLogin = { WebHandover.showLogin(context, it) },
-                onLogout = { WebSites.login(context).logout(it) },
-                onLogoutAll = { WebSites.logoutAll(context) },
-            )
-            val routeStore = remember { FileRouteStore.shared(context) }
-            var routeCount by remember { mutableStateOf<Int?>(null) }
-            // 第一次取记忆要读盘解密,放到后台线程;页面的协程跟着这一屏走
-            val vmScope = rememberCoroutineScope()
-            LaunchedEffect(Unit) { routeCount = withContext(Dispatchers.IO) { runCatching { routeStore.count() }.getOrNull() } }
-            val vm by produceState<MemoryViewModel?>(null) {
-                value = withContext(Dispatchers.IO) {
-                    val bundled = GuideCatalog.loadBundled()
-                    MemoryViewModel(
-                        memoryRuntime.store(), memoryRuntime.settings(), memoryRuntime.skills(),
-                        vmScope, memoryRuntime.file().brokenNotice,
-                        wipe = { memoryRuntime.scope.launch(Dispatchers.IO) { memoryRuntime.wipeAll() } },
-                        onForgotten = { id -> memoryRuntime.scope.launch(Dispatchers.IO) { memoryRuntime.stripMemory(setOf(id)) } },
-                        runnableScripts = bundled.runnableScripts(),
-                        appDrafts = memoryRuntime.appKnowledge(),
-                        builtinSkillNames = bundled.items.map { it.name }.toSet(),
-                    )
-                }
-            }
-            vm?.let { m ->
-                // 从结果卡片的「看看」进来:直接看技能分段
-                LaunchedEffect(m) { if (memoryRuntime.openRequest.value != null) m.select(Segment.Skills) }
-                MemoryDataScreen(
-                    m, webSites, routeCount,
-                    onClearRoutes = {
-                        vmScope.launch { routeCount = withContext(Dispatchers.IO) { routeStore.clear(); routeStore.count() } }
-                    },
-                    onBack = { memoryRuntime.requestOpen(null); nav.back() },
-                )
-            }
-        }
-        Route.Run -> {
-            val id = runId
-            val vm = remember(id) { id?.let { RunTimelineViewModel(
-                    RunStore(context), it, resolveMemory = app.chat::usedMemoryTexts,
-                    alive = { run -> app.taskState.runs.value.any { r -> r.runId.value == run } },
-                ) } }
-            if (vm != null) RunTimelineScreen(vm, back) else LaunchedEffect(Unit) { nav.back() }
-        }
-        Route.Source -> {
-            val vm = remember(sourceRunId, sourceLegacyText) {
-                SourceViewModel(RunStore(context), sourceRunId, sourceLegacyText) { ConfirmationNotifier.appLabel(context, it) }
-            }
-            SourceScreen(vm, back)
-        }
-        Route.Plans -> PlansScreen(context, onBack = back, onOpenConversation = {
-            app.chat.openConversation(it)
-            nav.reset()
-        })
-        Route.Screens -> ScreensScreen(app.taskState, onBack = back, onOpenConversation = {
-            app.chat.openConversation(it)
-            nav.reset()
-        })
+        Route.Browser -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onSendPrompt = { txt -> app.chat.send(txt, check) }, onOpenSettings = { nav.pushFromDrawer(Route.Settings) })
+        Route.Memory, Route.Run, Route.Source, Route.Plans, Route.Screens -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onSendPrompt = { txt -> app.chat.send(txt, check) }, onOpenSettings = { nav.pushFromDrawer(Route.Settings) })
     }
 }

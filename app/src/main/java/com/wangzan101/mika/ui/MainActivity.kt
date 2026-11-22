@@ -414,6 +414,13 @@ tools = emptyList(),
 reply.parts.filterIsInstance<Part.Text>().joinToString("") { it.text }
 },
                                                   onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
+                                            onOpenBrowser = { url ->
+                                                if (url.startsWith("http://") || url.startsWith("https://")) {
+                                                    runCatching { UserBrowser.of(context).open(url) }
+                                                }
+                                                nav.push(Route.Browser)
+                                            },
+                                            onOpenMemory = { nav.push(Route.Memory) },
                                                  )
         Route.PhoneSetup -> PhoneSetupScreen(status, setupRepair, onFix, onboarding = onboarding == OnboardingStep.Phone) {
             phoneSetup.markGuideSeen()
@@ -445,6 +452,13 @@ tools = emptyList(),
 reply.parts.filterIsInstance<Part.Text>().joinToString("") { it.text }
 },
                                          onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
+                                            onOpenBrowser = { url ->
+                                                if (url.startsWith("http://") || url.startsWith("https://")) {
+                                                    runCatching { UserBrowser.of(context).open(url) }
+                                                }
+                                                nav.push(Route.Browser)
+                                            },
+                                            onOpenMemory = { nav.push(Route.Memory) },
                                         )
         Route.Settings -> {
             val autonomous by app.approvals.autonomous.collectAsState()
@@ -528,6 +542,13 @@ tools = emptyList(),
 reply.parts.filterIsInstance<Part.Text>().joinToString("") { it.text }
 },
                                                                                   onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
+                                            onOpenBrowser = { url ->
+                                                if (url.startsWith("http://") || url.startsWith("https://")) {
+                                                    runCatching { UserBrowser.of(context).open(url) }
+                                                }
+                                                nav.push(Route.Browser)
+                                            },
+                                            onOpenMemory = { nav.push(Route.Memory) },
                                                                                  )
     }
 }

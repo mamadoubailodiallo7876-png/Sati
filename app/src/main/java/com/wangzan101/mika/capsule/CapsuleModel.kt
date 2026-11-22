@@ -180,7 +180,7 @@ class CapsuleModel(private val reasonLabel: (String) -> String? = { null }) {
         seen.retainAll(marks)
         if (inputs.cardOpen) seen += marks
 
-        if (inputs.mode == CapsuleMode.Off || !inputs.serviceAvailable || inputs.mikaInForeground || !inputs.screenInteractive) {
+        if (inputs.mode == CapsuleMode.Off || !inputs.serviceAvailable || !inputs.screenInteractive) {
             // 再出现时直接显示最新的那句,不接着上次的节流
             shownIdentity = null
             shownText = null

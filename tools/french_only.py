@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, shutil
+import os, shutil, re
 
 for d in ["app/src/main/res/values-zh", "app/src/main/res/values-b+zh+Hant"]:
     if os.path.isdir(d):
@@ -26,7 +26,7 @@ REPLACEMENTS = [
     ("请到设置 > 模型,把思考强度改为默认或服务端支持的档位。", "Réglez le niveau de raisonnement sur Par défaut dans Paramètres > Modèle."),
     ("这个账号不能在其他 App 里用 ChatGPT 额度(需要 Plus 或 Pro,并且所在地区和账号设置允许)。", "Ce compte ne peut pas utiliser le quota ChatGPT dans cette app (Plus ou Pro requis). "),
     ("这个账号没开通或没权限用。去设置 > 模型换一个模型,或到服务商后台开通。", " n'est pas activé pour ce compte. Changez de modèle dans Paramètres > Modèle."),
-    ("不支持调用工具,Mika 干活要靠工具。去设置 > 模型换一个会调用工具的模型。", " ne gère pas l'appel d'outils requis par Mika. Choisissez un autre modèle dans Paramètres > Modèle."),
+    ("不支持调用工具,Mika 干活要靠工具。去设置 > 模型换一个会调用工具的模型。", " ne gère pas l'appel d'outils requis par Gangou. Choisissez un autre modèle dans Paramètres > Modèle."),
     ("在这个服务商那里不存在。", " n'existe pas chez ce fournisseur. "),
     ("服务端回复:", "Réponse serveur : "),
     ("服务端说明:", "Détail serveur : "),
@@ -83,7 +83,7 @@ REPLACEMENTS = [
     ("订阅档位不能用这个接口", "Abonnement non autorisé pour cette API"),
     ("模型返回了无法解析的内容", "Réponse du modèle illisible"),
     # Fournisseurs et UI
-    ("关于 Mika", "À propos de Mika"),
+    ("关于 Mika", "À propos de Gangou"),
     ("智谱 Coding Plan", "Zhipu Coding Plan"),
     ("通义千问", "Qwen (Alibaba)"),
     ("硅基流动", "SiliconFlow"),
@@ -108,7 +108,9 @@ REPLACEMENTS = [
     ("等待确认", "En attente de confirmation"),
     ("已取消", "Annulé"),
     ("未知错误", "Erreur inconnue"),
-]
+    ("请稍候", "veuillez patienter"),
+    ("正在验证", "vérification en cours"),
+]    
 
 for base in ["app/src/main/java", "core/src/main/kotlin", "app/src/main/res"]:
     for r, _, files in os.walk(base):
@@ -123,6 +125,23 @@ for base in ["app/src/main/java", "core/src/main/kotlin", "app/src/main/res"]:
                     new_txt = new_txt.replace(zh, fr)
             if new_txt != txt:
                 open(path, "w", encoding="utf-8").write(new_txt)
+def replace_mika_and_zh():
+    def sub_mika(txt, ex=()):
+        pat = r"(https?://\S+|com\.wangzan101\.mika\S*" + "".join("|" + x for x in ex) + r")|\bMika\b"
+        return re.sub(pat, lambda m: m.group(1) or "Gangou", txt)
+    configs = [("app/src/main/res", (".xml",), (), False, False), ("core/src/main/resources/prompts", (".md", ".txt", ".py", ".json", ".xml"), ("configure-mika",), True, True), ("core/src/main/resources/skills", (".md", ".txt", ".py", ".json", ".xml"), ("configure-mika",), True, True)]
+    for base, exts, ex, do_rep, do_zh in configs:
+        if not os.path.isdir(base): continue
+       for r, _, files in os.walk(base):
+           for fn in files:
+               if not fn.endswith(exts): continue
+                   p = os.path.join(r, fn); t = open(p, "r", encoding="utf-8").read(); nt = t
+                    if do_rep:
+                   for zh, fr in REPLACEMENTS: nt = nt.replace(zh, fr)
+                    nt = sub_mika(nt, ex)
+                    if do_zh: nt = re.sub(r"[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]+", "", nt)
+                    if nt != t: open(p, "w", encoding="utf-8").write(nt)
+replace_mika_and_zh()
 
 id_path = "core/src/main/resources/prompts/system/identity.md"
 if os.path.isfile(id_path):

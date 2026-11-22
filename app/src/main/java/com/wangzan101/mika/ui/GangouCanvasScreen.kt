@@ -244,9 +244,7 @@ fun registerAndroidCanvasPort(context: Context) {
 fun GangouCanvasScreen(
     isBusy: Boolean,
     onSendPrompt: (String) -> Boolean,
-    onOpenFullChat: () -> Unit,
     onOpenSettings: () -> Unit,
-    onOpenBrowser: () -> Unit,
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) { GangouCanvasState.loadFromDisk(context) }
@@ -366,7 +364,14 @@ fun GangouCanvasScreen(
                             Text("Fermer", color = Color(0xFF94A3B8), fontSize = 12.sp)
                         }
                     }
-
+                    if (GangouCanvasState.lastSummary.isNotBlank()) {
+                        Text(
+                        text = GangouCanvasState.lastSummary,
+                        color = Color(0xFF94A3B8),
+                        fontSize = 11.5.sp,
+                        maxLines = 2
+                        )
+                    }
                     OutlinedTextField(
                         value = promptText,
                         onValueChange = { promptText = it },
@@ -405,7 +410,7 @@ fun GangouCanvasScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedButton(
                             onClick = {
@@ -413,19 +418,11 @@ fun GangouCanvasScreen(
                                 Toast.makeText(context, "Toile blanche", Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.weight(1f)
-                        ) { Text("Vide", fontSize = 11.sp) }
-                        OutlinedButton(
-                            onClick = { sheetOpen = false; onOpenFullChat() },
-                            modifier = Modifier.weight(1f)
-                        ) { Text("Chat", fontSize = 11.sp) }
-                        OutlinedButton(
-                            onClick = { sheetOpen = false; onOpenBrowser() },
-                            modifier = Modifier.weight(1f)
-                        ) { Text("Web", fontSize = 11.sp) }
+                        ) { Text("Toile vide", fontSize = 12.sp) }
                         OutlinedButton(
                             onClick = { sheetOpen = false; onOpenSettings() },
                             modifier = Modifier.weight(1f)
-                        ) { Text("Réglages", fontSize = 11.sp) }
+                        ) { Text("Réglages", fontSize = 12.sp) }
                     }
                 }
             }

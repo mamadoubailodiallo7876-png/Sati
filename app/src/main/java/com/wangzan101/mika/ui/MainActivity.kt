@@ -445,6 +445,44 @@ registerAndroidCanvasPort(appContext)
         )
         Route.License -> LicensesScreen(onBack = back)
         Route.Browser -> BrowserScreen(remember { UserBrowser.of(context) }, onBack = back)
-        Route.Memory, Route.Run, Route.Source, Route.Plans, Route.Screens -> GangouCanvasScreen()
+        Route.Memory -> {
+val registry = remember { WebSites.registry(context) }
+val sites by registry.entries.collectAsState()
+val webSites = WebSitesState(
+sites = sites,
+onOpenLogin = { WebHandover.showLogin(context, it) },
+onLogout = { WebSites.login(context).logout(it) },
+onLogoutAll = { WebSites.logoutAll(context) },
+)
+val routeStore = remember { FileRouteStore.shared(context) }
+var routeCount by remember { mutableStateOf<Int?>(null) }
+val vmScope = rememberCoroutineScope()
+LaunchedEffect(Unit) { routeCount = withContext(Dispatchers.IO) { runCatching { routeStore.count() }.getOrNull() } }
+val vm by produceState<MemoryViewModel?>(null) {
+value = withContext(Dispatchers.IO) {
+val bundled = GuideCatalog.loadBundled()
+MemoryViewModel(
+memoryRuntime.store(), memoryRuntime.settings(), memoryRuntime.skills(),
+vmScope, memoryRuntime.file().brokenNotice,
+wipe = { memoryRuntime.scope.launch(Dispatchers.IO) { memoryRuntime.wipeAll() } },
+onForgotten = { id -> memoryRuntime.scope.launch(Dispatchers.IO) { memoryRuntime.stripMemory(setOf(id)) } },
+runnableScripts = bundled.runnableScripts(),
+appDrafts = memoryRuntime.appKnowledge(),
+builtinSkillNames = bundled.items.map { it.name }.toSet(),
+)
+}
+}
+vm?.let { m ->
+LaunchedEffect(m) { if (memoryRuntime.openRequest.value != null) m.select(Segment.Skills) }
+MemoryDataScreen(
+m, webSites, routeCount,
+onClearRoutes = {
+vmScope.launch { routeCount = withContext(Dispatchers.IO) { routeStore.clear(); routeStore.count() } }
+},
+onBack = { memoryRuntime.requestOpen(null); nav.back() },
+)
+}
+    }
+        Route.Run, Route.Source, Route.Plans, Route.Screens -> GangouCanvasScreen()
     }
 }

@@ -323,6 +323,8 @@ private fun MikaRoot(
     val app = context.applicationContext as MikaApp
     // 查到的新版本:侧栏、设置首页、关于页的红点都看它
     val updateState by app.updates.state.collectAsState()
+var showFullChat by remember { mutableStateOf(false) }
+val gangouChatUi by app.chat.ui.collectAsState()
     LaunchedEffect(requestedConversation) {
         if (requestedConversation != null) {
             app.chat.openConversation(requestedConversation)
@@ -367,6 +369,7 @@ private fun MikaRoot(
     } 
     val appContext = LocalContext.current
     LaunchedEffect(Unit) {
+registerAndroidCanvasPort(appContext)
        registerAndroidPluginPort(appContext)
         while (true) {
             syncPluginsAndProcessAiCommands(appContext)
@@ -408,6 +411,16 @@ private fun MikaRoot(
                 app.chat.refresh()
                 onStopOrDispose {}
             }
+if (!showFullChat) {
+GangouCanvasScreen(
+isBusy = gangouChatUi.composer == ComposerMode.Busy,
+onSendPrompt = { txt -> app.chat.send(txt, check) },
+onOpenFullChat = { showFullChat = true },
+onOpenSettings = { nav.pushFromDrawer(Route.Settings) },
+onOpenBrowser = { nav.pushFromDrawer(Route.Browser) },
+)
+} else {
+BackHandler(enabled = showFullChat) { showFullChat = false }
             ChatWithDrawer(
                 vm = app.chat,
                 check = check,
@@ -449,6 +462,7 @@ private fun MikaRoot(
                     openSpeechModel = { nav.push(Route.SpeechModel) },
                 )
             }
+        }
         }
         Route.Settings -> {
             val autonomous by app.approvals.autonomous.collectAsState()

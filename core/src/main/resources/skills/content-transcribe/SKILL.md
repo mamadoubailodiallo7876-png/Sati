@@ -1,37 +1,37 @@
 ---
 name: content-transcribe
-display: 把内容整理成文字
-description: 把视频、播客、文章整理成文字:摘要、分章节、摘引文或改写成文章
-aliases: ["总结视频", "整理播客", "文章摘要", "提取字幕"]
+display: Mettre du contenu en texte
+description: Mettre des vidéos, podcasts et articles en texte : résumé, chapitrage, citations ou réécriture en article
+aliases: ["résumer une vidéo", "organiser un podcast", "résumé d'article", "extraire les sous-titres"]
 apps: ["bilibili", "xiaohongshu"]
 sites: ["youtube.com", "xiaoyuzhoufm.com"]
-terms: ["摘要", "总结", "转录", "字幕", "播客", "章节", "要点", "引文", "文字稿"]
+terms: ["résumé", "synthèse", "transcription", "sous-titres", "podcast", "chapitres", "points clés", "citations", "script"]
 ---
-## 入口
+## Point d'entrée
 
-先问清要哪种结果:全文文字稿、摘要、章节、引文,还是改写成一篇文章。用户没说时,做一份五到十句的摘要。
+Demandez d'abord le format souhaité : transcription intégrale, résumé, chapitrage, citations ou réécriture en article. Si l'utilisateur ne précise rien, rédigez un résumé de cinq à dix phrases.
 
-文字从内容所在的地方取:文章读网页正文;视频取字幕或简介里的文字稿;播客看节目页有没有文字稿或节目笔记。本机没有语音转文字,只有音频时请用户给文字稿或字幕文件。
+Récupérez le texte là où se trouve le contenu : pour un article, lisez le corps de la page web ; pour une vidéo, récupérez les sous-titres ou la transcription dans la description ; pour un podcast, vérifiez si la page de l'épisode propose une transcription ou des notes d'épisode. Cet appareil ne dispose pas de reconnaissance vocale : s'il n'y a que de l'audio, demandez à l'utilisateur de fournir une transcription ou un fichier de sous-titres.
 
-## 步骤
+## Étapes
 
-1. **取全文**:用 `web_read_page` 读页面正文;用户发来的字幕或文字稿文件在 `/workspace/inbox/`,用 `read_file` 读。
-2. **分段读**:内容长时分几段读,段与段之间留一点重叠,读完去掉重复,确认从头到尾没有漏段。
-3. **按要的形式写**:各种形式的写法和样例见 `references/transcript-output-formats.md`,写之前读一遍。摘要的骨架是:一两句总述;按出现顺序列三到八个主题,每个带大致的开始时间和两三句内容;最后列值得记下的观点、数字和提到的书或作品。
-4. **用原内容的语言写**,用户另有要求时照用户的。
-5. **复读**:写完对照原文看一遍:顺序对不对,有没有漏掉的主题,时间和引文能不能在原文里找到。
+1. **Récupérer le texte intégral** : utilisez `web_read_page` pour lire le corps de la page ; les fichiers de sous-titres ou de transcription envoyés par l'utilisateur se trouvent dans `/workspace/inbox/`, lisez-les avec `read_file`.
+2. **Lire par segments** : si le contenu est long, lisez-le en plusieurs parties avec un léger chevauchement entre elles, puis supprimez les doublons et vérifiez qu'aucun passage ne manque du début à la fin.
+3. **Rédiger selon le format demandé** : consultez `references/transcript-output-formats.md` avant de rédiger pour voir les consignes et exemples de chaque format. La structure d'un résumé est la suivante : une ou deux phrases de présentation générale ; trois à huit thèmes par ordre d'apparition, chacun accompagné de son horodatage approximatif de début et de deux ou trois phrases de contenu ; puis une liste des idées marquantes, chiffres et livres ou œuvres mentionnés.
+4. **Rédiger dans la langue du contenu original**, sauf demande contraire de l'utilisateur.
+5. **Relire** : une fois la rédaction terminée, comparez avec la source pour vérifier l'ordre, l'absence de thèmes oubliés, et que les horodatages et citations figurent bien dans le texte d'origine.
 
-## 容易出错的地方
+## Points de vigilance
 
-- 字幕只有文字,画面里的图表、演示和屏幕上的字读不到,写的时候不能说成看过画面。
-- 自动生成的字幕常有错字和断句错误,专有名词、人名和数字要结合上下文或简介核对。
-- 时间是根据字幕位置估的,就写「约第 23 分钟」,不写成精确到秒。
-- 听不清、字幕缺失的段落要标出来,不去补写。
+- Les sous-titres ne contiennent que le texte parlé : les graphiques, démonstrations et textes affichés à l'écran ne sont pas accessibles, n'écrivez donc pas comme si vous aviez vu l'image.
+- Les sous-titres générés automatiquement comportent souvent des fautes ou des coupures erronées : vérifiez les noms propres, noms de personnes et chiffres à l'aide du contexte ou de la description.
+- Les horodatages sont estimés d'après la position des sous-titres : indiquez par exemple « vers la 23e minute », sans précision à la seconde près.
+- Signalez les passages inaudibles ou sans sous-titres au lieu de les inventer.
 
-## 怎样算办成(核实证据)
+## Critères de réussite (vérification)
 
-结果覆盖原内容的全部段落;每条引文和时间都能在取到的字幕或正文里找到。
+Le résultat couvre tous les segments du contenu original ; chaque citation et chaque horodatage peut être retrouvé dans les sous-titres ou le texte récupéré.
 
-## 什么时候停下交给用户
+## Quand s'arrêter et demander à l'utilisateur
 
-内容要登录或付费才能看,或者只有音频、没有任何文字稿时,告诉用户缺什么,请用户提供。
+Si le contenu nécessite une connexion ou un paiement, ou s'il n'y a que de l'audio sans aucune transcription, indiquez à l'utilisateur ce qui manque et demandez-lui de le fournir.

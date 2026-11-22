@@ -415,7 +415,7 @@ registerAndroidCanvasPort(appContext)
         Route.Chat -> GangouCanvasScreen()
         Route.Settings -> {
             val autonomous by app.approvals.autonomous.collectAsState()
-            SettingsScreen(store, status, release, onFix, onBack = back, onOpenMemory = { nav.push(Route.Memory) },
+            SettingsScreen(store, status, release, onFix, onBack = back, onOpenMemory = { nav.push(Route.Memory) }, onOpenBrowser = { nav.push(Route.Browser) },
                 onOpenModels = { nav.push(Route.Models) },
                 autonomous = autonomous, onAutonomous = app.approvalControl::setAutonomous,
                 updateVersion = updateState.update?.version, onOpenAbout = { nav.push(Route.About) },
@@ -444,7 +444,7 @@ registerAndroidCanvasPort(appContext)
             },
         )
         Route.License -> LicensesScreen(onBack = back)
-        Route.Browser -> GangouCanvasScreen()
+        Route.Browser -> BrowserScreen(remember { UserBrowser.of(context) }, onBack = back)
         Route.Memory, Route.Run, Route.Source, Route.Plans, Route.Screens -> GangouCanvasScreen()
     }
 }

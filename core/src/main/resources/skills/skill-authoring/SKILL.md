@@ -1,63 +1,59 @@
 ---
 name: skill-authoring
-display: 写技能
-description: 用户要新建、导入或修改一份技能(做一类事的固定做法)时用:怎么写、怎么查重、怎么存下
-aliases: ["创建技能", "新建技能", "写个技能", "保存技能", "导入技能", "改技能", "skill"]
-terms: ["技能", "做法", "流程", "步骤", "模板", "以后都这样做", "存成技能", "导入", "改写"]
+display: Rédiger une compétence
+description: À utiliser lorsque l'utilisateur souhaite créer, importer ou modifier une compétence (une méthode récurrente pour un type de tâche) : comment l'écrire, vérifier les doublons et l'enregistrer
+aliases: ["créer une compétence", "nouvelle compétence", "écrire une compétence", "enregistrer une compétence", "importer une compétence", "modifier une compétence", "skill"]
+terms: ["compétence", "méthode", "processus", "étapes", "modèle", "faire comme ça à l'avenir", "enregistrer en compétence", "importer", "réécrire"]
 ---
-## 什么时候写
+## Quand écrire une compétence
 
-- 用户明确要「建一个技能」「把这个做法存下来」「把这段导入成技能」「改一下某个技能」时写。只是聊做法、问能不能做,先回答,不要自己存。
-- 技能写的是一类事以后怎么做,不是一次性的事实或偏好。「我不吃香菜」这类是记忆,不是技能。
-- 能写下技能的只有 `skill_save`。手边没有这个工具时,直接告诉用户这次存不了,不要说已经存好。
+- Écrivez une compétence uniquement lorsque l'utilisateur demande explicitement de « créer une compétence », « enregistrer cette méthode », « importer ceci comme compétence » ou « modifier une compétence ». S'il discute simplement d'une méthode ou demande si quelque chose est faisable, répondez d'abord sans rien enregistrer de votre propre chef.
+- Une compétence décrit comment réaliser un type de tâche à l'avenir, pas un fait ponctuel ni une préférence personnelle. « Je ne mange pas de coriandre » relève de la mémoire, pas d'une compétence.
+- Seul `skill_save` permet d'enregistrer une compétence. Si vous n'avez pas cet outil sous la main, dites honnêtement à l'utilisateur que l'enregistrement est impossible pour le moment, sans prétendre que c'est fait.
 
-## 先查有没有
+## Vérifier d'abord ce qui existe
 
-1. 用 `skill_search` 按这类事的说法查一次。
-2. 有一份个人技能(personal)就是这类事:用 `skill_read` 读全文,在它的基础上改,存时沿用它的名字、带上读到的 version。不要为同一类事再起一份。
-3. 只有内置技能对得上:内置的改不了。用户要的是不同做法时,另起一个名字写成自己的技能,并告诉用户以后会按哪份来。
+1. Utilisez `skill_search` une fois avec la formulation décrivant ce type de tâche.
+2. Si une compétence personnelle (`personal`) correspond déjà à ce type de tâche : lisez-la intégralement avec `skill_read`, modifiez-la sur cette base, puis enregistrez-la en conservant son `name` et la `version` lue. Ne créez pas une deuxième compétence pour la même tâche.
+3. Si seule une compétence intégrée correspond : les compétences intégrées ne sont pas modifiables. Si l'utilisateur souhaite une autre méthode, créez votre propre compétence sous un autre nom et indiquez à l'utilisateur laquelle sera utilisée à l'avenir.
 
-## 先说清再写
+## Clarifier avant d'écrire
 
-用户只给了一句模糊的话(「帮我建个点咖啡的技能」)时,先用 `ask_user` 问清最影响做法的一两点:在哪个 App 或网站、做到哪一步停、有没有固定要求。把要存的要点用几行列给用户确认,再存。用户已经把做法说清楚、或贴来了完整内容,就不用再问。
+Si l'utilisateur ne donne qu'une phrase vague (« crée-moi une compétence pour commander un café »), utilisez d'abord `ask_user` pour clarifier un ou deux points déterminants : dans quelle application ou sur quel site, jusqu'à quelle étape aller, et s'il y a des exigences fixes. Présentez les points clés en quelques lignes pour validation avant d'enregistrer. Si l'utilisateur a déjà décrit la méthode clairement ou collé le contenu complet, inutile de redemander.
 
-## 怎么写
+## Comment rédiger
 
-整份是一个文档:头部加五个小节,标题照写,全文不超过 4000 字。
+Le document forme un tout : un en-tête suivi de cinq sous-sections, avec exactement ces titres, pour un total de 4 000 caractères maximum.
 
 ```
 ---
 name: order-coffee
-display: 点咖啡
-description: 用户要点一杯咖啡外送或自取时用
-aliases: ["点咖啡", "买杯咖啡"]
+display: Commander un café
+description: À utiliser lorsque l'utilisateur veut commander un café en livraison ou à emporter
+aliases: ["commander un café", "acheter un café"]
 ---
-## 入口
-## 步骤
-## 容易出错的地方
-## 怎样算办成
-## 什么时候停下交给用户
+## Point d'entrée
+## Étapes
+## Erreurs fréquentes
+## Critères de réussite
+## Quand passer la main à l'utilisateur
 ```
 
-- name 用小写英文、数字和连字符,说清是哪类事;display 是简短中文名。
-- description 一句话写「什么时候用」,把用户可能的说法写进 aliases:以后有没有被用上全靠这两处。
-- 入口写从哪儿开始(哪个 App、网站或搜索);步骤写编号的短句,一步一个动作,写按钮、页面的名字,不写坐标。
-- 每次会变的东西(人名、金额、地址、要发的文字)写成 `<参数>` 或「用户指定的联系人」,不写死。
-- 容易出错的地方写会走偏的点和绕过的办法;怎样算办成写办完后在哪儿能看到结果;什么时候停下写需要用户登录、付款、确认或做选择的时刻。
-- 反引号只用来包工具名,App 名、按钮文字不要用反引号。不写密码、验证码、卡号和别人的私人信息。
-- 宁短勿长:模型自己会的不用写,只写这类事特有的做法和坑。
+- `name` utilise des lettres minuscules, des chiffres et des tirets pour indiquer clairement le type de tâche ; `display` est un nom court en français.
+- `description` résume en une phrase « quand l'utiliser », et `aliases` regroupe les formulations probables de l'utilisateur : la réutilisation future dépend de ces deux champs.
+- `Point d'entrée` indique par où commencer (quelle application, quel site web ou quelle recherche) ; `Étapes` utilise des phrases courtes numérotées, une action par étape, en nommant les boutons et les pages sans jamais écrire de coordonnées.
+- Les éléments variables d'une fois sur l'autre (nom de personne, montant, adresse, texte à envoyer) s'écrivent `<paramètre>` ou « le contact indiqué par l'utilisateur », jamais en dur.
+- `Erreurs fréquentes` signale les pièges et les moyens de les contourner ; `Critères de réussite` précise où vérifier le résultat une fois terminé ; `Quand passer la main à l'utilisateur` indique les moments nécessitant une connexion, un paiement, une confirmation ou un choix de l'utilisateur.
+- Les accents graves ne servent qu'à encadrer les noms d'outils ; n'en mettez pas autour des noms d'applications ou des libellés de boutons. N'écrivez jamais de mots de passe, codes de vérification, numéros de carte ni informations personnelles d'autrui.
+- Mieux vaut court que long : inutile d'écrire ce que le modèle sait déjà faire, concentrez-vous uniquement sur les méthodes et les pièges propres à ce type de tâche.
 
-## 导入用户贴来的内容
+## Importer un contenu collé par l'utilisateur
 
-用户贴来一段别处写的技能、笔记或流程时,把它改写成上面的格式:保留做法本身,去掉和这里无关的东西(别的软件的命令、手机上用不了的工具、脚本),内容有缺的小节按原意补一两句。原文里的账号、密码这类东西不要带进来。
+Lorsque l'utilisateur colle une compétence, une note ou une procédure rédigée ailleurs, reformatez-la selon la structure ci-dessus : conservez la méthode elle-même, supprimez ce qui est sans rapport ici (commandes d'autres logiciels, outils ou scripts inutilisables sur téléphone) et complétez d'une phrase ou deux les sous-sections manquantes selon l'intention d'origine. N'importez jamais les identifiants ou mots de passe éventuellement présents dans le texte source.
 
-## 存下和告诉用户
+## Enregistrer et informer l'utilisateur
 
-1. 用 `skill_save` 存:markdown 是整份文档,quote 抄用户这次要你建或改技能的原话。
-2. 结果 ok 才算存下。照结果告诉用户:技能叫什么、是新建还是改了已有的,在「设置 › 记忆与技能」里能看到,下次遇到这类事会先试用它。
-3. 结果失败时照原因改了再存一次;还是不行就如实说没存上、为什么,不要说已经建好。
-4. 改名、删除这里做不了:请用户在「设置 › 记忆与技能」里删掉旧的;要换名字就按新名字另存一份,再请用户删掉旧的。
-
-## 怎样算办成
-
-`skill_save` 返回 ok,结果里的名字就是要存的那份;回答里说的名字、新建还是修改,和结果一致。
+1. Enregistrez avec `skill_save` : `markdown` contient l'intégralité du document, et `quote` reprend textuellement la demande actuelle de création ou de modification de l'utilisateur.
+2. L'enregistrement n'est réussi que si le résultat est `ok`. Informez l'utilisateur d'après ce résultat : le nom de la compétence, s'il s'agit d'une création ou d'une mise à jour, qu'elle est visible dans « Paramètres › Mémoire et compétences », et qu'elle sera essayée en priorité la prochaine fois pour ce type de tâche.
+3. En cas d'échec, corrigez selon la raison indiquée et réessayez une fois ; si cela échoue encore, expliquez honnêtement que l'enregistrement n'a pas abouti et pourquoi, sans prétendre qu'il a réussi.
+4. Le renommage et la suppression ne se font pas ici : invitez l'utilisateur à supprimer l'ancienne compétence dans « Paramètres › Mémoire et compétences » ; pour changer de nom, enregistrez d'abord une nouvelle copie sous le nouveau nom, puis demandez à l'utilisateur de supprimer l'ancienne.

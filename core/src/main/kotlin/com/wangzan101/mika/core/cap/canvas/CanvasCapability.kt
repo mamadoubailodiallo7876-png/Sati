@@ -23,6 +23,7 @@ interface CanvasPort {
     suspend fun evalJs(js: String): String
     suspend fun resetCanvas(): String
     suspend fun manageSpaces(action: String, name: String?): String
+    suspend fun inspectVisual(): String
 }
 
 object CanvasPortRegistry {
@@ -73,6 +74,23 @@ internal object CanvasGetUiTool : AgentTool {
         val port = requireCanvas() ?: return failCode("canvas_unavailable")
         val res = runCatching { port.getUi() }.getOrElse { return failCode("canvas_error") }
         return ok { put("state", res) }
+    }
+}
+internal object CanvasInspectVisualTool : AgentTool {
+    override val capability = CANVAS_CAP
+    override val verb = Verb.ReadPage
+    override val risk = Risk.Read
+    override val def = ToolDef(
+        "canvas_inspect_visual",
+        "Inspect the live rendered layout of the Gangou canvas on the phone screen (viewport size, horizontal overflow, clipped/offscreen elements, contrast/visibility) to catch and fix any UI flaw.",
+        emptyMap(),
+        emptyList(),
+    )
+
+    override suspend fun execute(a: Args, ctx: ToolContext): ToolExecution {
+        val port = requireCanvas() ?: return failCode("canvas_unavailable")
+        val res = runCatching { port.inspectVisual() }.getOrElse { return failCode("canvas_error") }
+        return ok { put("layout", res) }
     }
 }
 
@@ -140,6 +158,7 @@ internal object CanvasSpacesTool : AgentTool {
 internal object CanvasGroup {
     val tools: List<AgentTool> = listOf(
         CanvasSetUiTool,
+        CanvasInspectVisualTool,
         CanvasGetUiTool,
         CanvasEvalTool,
         CanvasResetTool,
@@ -156,16 +175,28 @@ internal class CanvasCapability : Capability {
     override fun tools(): List<AgentTool> = CanvasGroup.tools
     override fun sections(env: PromptEnv): List<String> = listOf(
         """
-        ## Gangou — Toile Blanche Générative
-        Tu es **Gangou**, un environnement vivant qui démarre sur une toile graphique 100 % vide avec un bouton flottant.
-        - Quand l'utilisateur te demande de construire un espace de travail (OS complet, Harness d'agent, studio, tableau de bord, outil, jeu, etc.) ou de modifier l'interface actuelle, utilise **immédiatement** `canvas_set_ui(html, title, summary)` avec un fichier HTML/CSS/JS autonome, tactile, responsive et sans dépendance externe.
-        - Pour modifier ou faire évoluer l'espace actuel sans tout perdre, appelle d'abord `canvas_get_ui()` puis `canvas_set_ui(...)` (ou `canvas_eval(...)` pour une mise à jour rapide).
-        - Tu peux combiner la toile avec tous tes autres outils natifs (bac à sable Linux, navigateur intégré, contrôle du téléphone par accessibilité).
-        - **Pont direct Toile → Noyau (`window.GangouBridge`)** : dans le HTML/JS que tu génères, tu peux utiliser `window.GangouBridge` pour rendre tes boutons vivants :
-          * `GangouBridge.ask(prompt)` : envoie directement une commande ou un prompt à l'IA (qui peut exécuter Linux, navigateur, accessibilité ou modifier la toile).
-          * `GangouBridge.undo()` / `GangouBridge.redo()` / `GangouBridge.reset()` : annuler, rétablir ou revenir à la Toile Blanche.
-          * `GangouBridge.saveSpace(nom)` / `GangouBridge.loadSpace(nom)` / `GangouBridge.listSpaces()` : sauvegarder, charger ou lister les espaces JSON.
-          * `GangouBridge.openSettings()` : ouvrir les Paramètres de Gangou.
+        ## Gangou — Toile Blanche Générative & Design System
+        Tu es **Gangou**, un environnement graphique adaptatif sur Android. L'utilisateur démarre sur une toile vide et te demande de créer l'espace de travail de son choix (OS complet, Harness d'agent, studio, tableau de bord, etc.).
+
+        ### Outils de toile disponibles
+        - `canvas_set_ui(html, title, summary)` : dessine ou met à jour l'interface plein écran (sauvegarde Undo automatique).
+        - `canvas_get_ui()` : lit l'interface actuelle avant de la faire évoluer.
+        - `canvas_eval(js)` : exécute du JS en direct pour animer ou mettre à jour des données sans tout recharger.
+        - `canvas_inspect_visual()` : vérifie le rendu réel sur l'écran du téléphone (débordement horizontal, éléments coupés, dimensions). Appelle-le après un design complexe pour t'assurer qu'aucun bouton n'est coupé.
+        - `canvas_spaces(action, name)` / `canvas_reset()` : gérer plusieurs espaces nommés ou revenir à la toile vide.
+
+        ### Exigences de Design Poussé (Obligatoire)
+        Ne génère JAMAIS une page basique ou terne. Chaque interface doit ressembler à une application native ou un OS moderne soigné :
+        - **Esthétique & Surfaces** : fond profond (`#050811` à `#0b1120`), cartes en verre dépoli subtil (`background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.09)`), ombres douces, accents lumineux cohérents (`#38bdf8`, `#818cf8`, `#10b981`).
+        - **Typographie & Iconographie** : hiérarchie visuelle nette (titres gras `letter-spacing: -0.02em`, sous-titres doux `#94a3b8`, chiffres `font-variant-numeric: tabular-nums`), privilégie des icônes **SVG inline nettes** plutôt que des emojis bruts à répétition.
+        - **Ergonomie Mobile & Micro-interactions** : `min-height: 100dvh; overflow-x: hidden;`, respect des zones sûres (`padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom)`), cibles tactiles `>= 44px`, transitions fluides (`transition: transform .15s ease, background .15s ease`) et états `:active { transform: scale(0.97); }`.
+        - **Zéro données factices silencieuses** : chaque bouton affiché doit fonctionner réellement.
+
+        ### Pont direct Toile ↔ Noyau (`window.GangouBridge` & `window.onGangouEvent`)
+        - `GangouBridge.ask(prompt)` : envoie une demande à l'IA directement depuis un bouton de la toile.
+        - `GangouBridge.runLinux(cmd, callbackName)` : exécute une commande shell dans le bac à sable Linux et appelle `window[callbackName]({exitCode, output, timedOut})` avec la sortie réelle (sans consommer de tokens IA !).
+        - `GangouBridge.undo()` / `redo()` / `reset()` / `openSettings()` / `saveSpace(nom)` / `loadSpace(nom)` / `listSpaces()`.
+        - `window.onGangouEvent = (evt) => { ... }` : reçoit en direct `{type: 'status', busy: true|false}` dès que l'IA commence ou finit une tâche.
         """.trimIndent()
     )
 }

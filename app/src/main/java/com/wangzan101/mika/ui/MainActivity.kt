@@ -385,7 +385,7 @@ registerAndroidCanvasPort(appContext)
     // 聊天页离开组合树时保留列表位置和输入内容，返回设置页等子页面后原样恢复。
     val screenStates = rememberSaveableStateHolder()
     when (nav.current) {
-       Route.CreatorPlugins -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onSendPrompt = { txt -> app.chat.send(txt, check) }, onOpenSettings = { nav.pushFromDrawer(Route.Settings) })
+       Route.CreatorPlugins -> GangouCanvasScreen()
         Route.PhoneSetup -> PhoneSetupScreen(status, setupRepair, onFix, onboarding = onboarding == OnboardingStep.Phone) {
             phoneSetup.markGuideSeen()
             if (onboarding == OnboardingStep.Phone) goOnboarding(null) else nav.back()
@@ -404,11 +404,7 @@ registerAndroidCanvasPort(appContext)
                 },
             )
         }
-        Route.Chat -> GangouCanvasScreen(
-                        isBusy = gangouChatUi.composer == ComposerMode.Busy,
-                        onSendPrompt = { txt -> app.chat.send(txt, check) },
-                        onOpenSettings = { nav.pushFromDrawer(Route.Settings) },
-                    )
+        Route.Chat -> GangouCanvasScreen()
         Route.Settings -> {
             val autonomous by app.approvals.autonomous.collectAsState()
             SettingsScreen(store, status, release, onFix, onBack = back, onOpenMemory = { nav.push(Route.Memory) },
@@ -440,7 +436,7 @@ registerAndroidCanvasPort(appContext)
             },
         )
         Route.License -> LicensesScreen(onBack = back)
-        Route.Browser -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onSendPrompt = { txt -> app.chat.send(txt, check) }, onOpenSettings = { nav.pushFromDrawer(Route.Settings) })
-        Route.Memory, Route.Run, Route.Source, Route.Plans, Route.Screens -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onSendPrompt = { txt -> app.chat.send(txt, check) }, onOpenSettings = { nav.pushFromDrawer(Route.Settings) })
+        Route.Browser -> GangouCanvasScreen()
+        Route.Memory, Route.Run, Route.Source, Route.Plans, Route.Screens -> GangouCanvasScreen()
     }
 }

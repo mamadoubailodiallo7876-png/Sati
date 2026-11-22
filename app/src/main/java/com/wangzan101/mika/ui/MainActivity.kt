@@ -74,6 +74,12 @@ import com.wangzan101.mika.ui.theme.animationsOff
 import com.wangzan101.mika.ui.theme.appearanceDark
 import com.wangzan101.mika.ui.theme.systemBarsFor
 
+import com.wangzan101.mika.core.model.Author
+import com.wangzan101.mika.core.model.Message
+import com.wangzan101.mika.core.model.ModelRole
+import com.wangzan101.mika.core.model.Part
+import com.wangzan101.mika.core.model.Role
+
 class MainActivity : ComponentActivity() {
     private lateinit var monitor: SystemStatusMonitor
     private var requestedConversation by mutableStateOf<String?>(null)
@@ -397,7 +403,17 @@ registerAndroidCanvasPort(appContext)
     val screenStates = rememberSaveableStateHolder()
     when (nav.current) {
        Route.CreatorPlugins -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onAskAi = { txt -> app.chat.send(txt, check) },
-                                                 onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
+                            onCompleteAi = { sys, prompt ->
+val model = app.providers.modelFor(ModelRole.Main) ?: app.providers.modelFor(ModelRole.Light)
+?: error("Aucun modèle configuré dans Paramètres > Modèle")
+val reply = model.complete(
+system = sys,
+messages = listOf(Message(role = Role.User, parts = listOf(Part.Text(prompt)), author = Author.User)),
+tools = emptyList(),
+)
+reply.parts.filterIsInstance<Part.Text>().joinToString("") { it.text }
+},
+                                                  onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
                                                  )
         Route.PhoneSetup -> PhoneSetupScreen(status, setupRepair, onFix, onboarding = onboarding == OnboardingStep.Phone) {
             phoneSetup.markGuideSeen()
@@ -418,7 +434,17 @@ registerAndroidCanvasPort(appContext)
             )
         }
         Route.Chat -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onAskAi = { txt -> app.chat.send(txt, check) },
-                                        onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
+                                      onCompleteAi = { sys, prompt ->
+val model = app.providers.modelFor(ModelRole.Main) ?: app.providers.modelFor(ModelRole.Light)
+?: error("Aucun modèle configuré dans Paramètres > Modèle")
+val reply = model.complete(
+system = sys,
+messages = listOf(Message(role = Role.User, parts = listOf(Part.Text(prompt)), author = Author.User)),
+tools = emptyList(),
+)
+reply.parts.filterIsInstance<Part.Text>().joinToString("") { it.text }
+},
+                                         onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
                                         )
         Route.Settings -> {
             val autonomous by app.approvals.autonomous.collectAsState()
@@ -491,7 +517,17 @@ onBack = { memoryRuntime.requestOpen(null); nav.back() },
 }
     }
         Route.Run, Route.Source, Route.Plans, Route.Screens -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onAskAi = { txt -> app.chat.send(txt, check) },
-                                                                                 onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
+                                                                                onCompleteAi = { sys, prompt ->
+val model = app.providers.modelFor(ModelRole.Main) ?: app.providers.modelFor(ModelRole.Light)
+?: error("Aucun modèle configuré dans Paramètres > Modèle")
+val reply = model.complete(
+system = sys,
+messages = listOf(Message(role = Role.User, parts = listOf(Part.Text(prompt)), author = Author.User)),
+tools = emptyList(),
+)
+reply.parts.filterIsInstance<Part.Text>().joinToString("") { it.text }
+},
+                                                                                  onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
                                                                                  )
     }
 }

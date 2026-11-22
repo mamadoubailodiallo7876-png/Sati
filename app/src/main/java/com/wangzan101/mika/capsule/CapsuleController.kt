@@ -1276,6 +1276,15 @@ class CapsuleController(
             open(conversationId)
             collapse()
         }
+        override fun openSettings() {
+            com.wangzan101.mika.ui.GangouCanvasState.pendingOpenSettings = true
+            context.startActivity(
+                android.content.Intent(context, com.wangzan101.mika.ui.MainActivity::class.java).addFlags(
+                    android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    )
+                )
+            collapse()
+        }
         override fun zoom(on: Boolean) = this@CapsuleController.zoom(on)
         override fun openInput() = this@CapsuleController.openInput()
         override fun draft(text: String) {

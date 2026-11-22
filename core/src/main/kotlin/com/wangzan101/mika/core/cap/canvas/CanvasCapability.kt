@@ -161,6 +161,11 @@ internal class CanvasCapability : Capability {
         - Quand l'utilisateur te demande de construire un espace de travail (OS complet, Harness d'agent, studio, tableau de bord, outil, jeu, etc.) ou de modifier l'interface actuelle, utilise **immédiatement** `canvas_set_ui(html, title, summary)` avec un fichier HTML/CSS/JS autonome, tactile, responsive et sans dépendance externe.
         - Pour modifier ou faire évoluer l'espace actuel sans tout perdre, appelle d'abord `canvas_get_ui()` puis `canvas_set_ui(...)` (ou `canvas_eval(...)` pour une mise à jour rapide).
         - Tu peux combiner la toile avec tous tes autres outils natifs (bac à sable Linux, navigateur intégré, contrôle du téléphone par accessibilité).
+        - **Pont direct Toile → Noyau (`window.GangouBridge`)** : dans le HTML/JS que tu génères, tu peux utiliser `window.GangouBridge` pour rendre tes boutons vivants :
+          * `GangouBridge.ask(prompt)` : envoie directement une commande ou un prompt à l'IA (qui peut exécuter Linux, navigateur, accessibilité ou modifier la toile).
+          * `GangouBridge.undo()` / `GangouBridge.redo()` / `GangouBridge.reset()` : annuler, rétablir ou revenir à la Toile Blanche.
+          * `GangouBridge.saveSpace(nom)` / `GangouBridge.loadSpace(nom)` / `GangouBridge.listSpaces()` : sauvegarder, charger ou lister les espaces JSON.
+          * `GangouBridge.openSettings()` : ouvrir les Paramètres de Gangou.
         """.trimIndent()
     )
 }

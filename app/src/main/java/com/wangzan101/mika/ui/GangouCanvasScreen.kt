@@ -1,6 +1,10 @@
 package com.wangzan101.mika.ui
 
 import android.annotation.SuppressLint
+import com.wangzan101.mika.core.cap.sandbox.CommandResult
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -206,6 +210,41 @@ fun registerAndroidCanvasPort(context: Context) {
             }.toString()
         }
 
+
+        override suspend fun inspectVisual(): String {
+            val layoutJs = """
+                (function(){
+                  var vw = window.innerWidth || 0;
+                  var vh = window.innerHeight || 0;
+                  var sw = document.documentElement ? document.documentElement.scrollWidth : 0;
+                  var sh = document.documentElement ? document.documentElement.scrollHeight : 0;
+                  var clipped = [];
+                  var els = document.querySelectorAll('button,a,input,select,textarea,[role=button],.card');
+                  for (var i = 0; i < els.length && clipped.length < 12; i++) {
+                    var r = els[i].getBoundingClientRect();
+                    if (r.width > 0 && r.height > 0 && (r.right > vw + 2 || r.left < -2)) {
+                      clipped.push({
+                        tag: els[i].tagName.toLowerCase(),
+                        text: (els[i].innerText || els[i].id || '').trim().slice(0, 35),
+                        left: Math.round(r.left),
+                        right: Math.round(r.right),
+                        viewportW: vw
+                      });
+                    }
+                  }
+                  return JSON.stringify({
+                    is_blank: !document.body || document.body.innerHTML.trim().length === 0,
+                    viewport: {width: vw, height: vh},
+                    scroll: {width: sw, height: sh},
+                    hasHorizontalOverflow: sw > vw + 2,
+                    clippedElements: clipped,
+                    visibleButtons: document.querySelectorAll('button,[role=button]').length
+                  });
+                })();
+            """.trimIndent()
+            return evalJs(layoutJs)
+        }
+
         override suspend fun evalJs(js: String): String {
             val res = withTimeoutOrNull(6000L) {
                 suspendCancellableCoroutine<String> { cont ->
@@ -245,9 +284,31 @@ private class GangouJsBridge(
     private val appCtx: Context,
     private val onAsk: (String) -> Unit,
     private val onOpenSettings: () -> Unit,
+    private val onRunLinux: (suspend (String) -> CommandResult)?,
 ) {
     private val main = Handler(Looper.getMainLooper())
     @JavascriptInterface fun ask(prompt: String) { if (prompt.isNotBlank()) main.post { onAsk(prompt.trim()) } }
+    @JavascriptInterface fun runLinux(cmd: String, callbackName: String) {
+        if (cmd.isBlank() || callbackName.isBlank()) return
+        val runner = onRunLinux ?: return
+        val safeCb = callbackName.replace(Regex("[^a-zA-Z0-9_.$]"), "")
+        CoroutineScope(Dispatchers.IO).launch {
+            val res = runCatching { runner(cmd) }.getOrElse { err ->
+                CommandResult(exitCode = -1, timedOut = false, killedBySystem = false, durationMs = 0L, output = "ERROR: ${err.message}", droppedBytes = 0L, network = false)
+            }
+            val payload = JSONObject().apply {
+                put("exitCode", res.exitCode)
+                put("timedOut", res.timedOut)
+                put("output", res.output)
+            }.toString()
+            main.post {
+                GangouCanvasState.webViewRef?.evaluateJavascript(
+                    "if(typeof window['$safeCb']==='function'){window['$safeCb']($payload);}",
+                    null
+                )
+            }
+        }
+    }
     @JavascriptInterface fun undo() { main.post { GangouCanvasState.undo(appCtx) } }
     @JavascriptInterface fun redo() { main.post { GangouCanvasState.redo(appCtx) } }
     @JavascriptInterface fun reset() { main.post { GangouCanvasState.reset(appCtx) } }
@@ -265,9 +326,21 @@ private class GangouJsBridge(
 fun GangouCanvasScreen(
     onAskAi: (String) -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    isBusy: Boolean = false,
+    onRunLinux: (suspend (String) -> CommandResult)? = null,
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) { GangouCanvasState.loadFromDisk(context) }
+    LaunchedEffect(isBusy) {
+        val evt = JSONObject().apply {
+            put("type", "status")
+            put("busy", isBusy)
+        }.toString()
+        GangouCanvasState.webViewRef?.evaluateJavascript(
+            "if(typeof window.onGangouEvent==='function'){window.onGangouEvent($evt);}",
+            null
+        )
+    }
 
     val html = GangouCanvasState.currentHtml
     val version = GangouCanvasState.renderVersion
@@ -290,7 +363,7 @@ fun GangouCanvasScreen(
                         setBackgroundColor(android.graphics.Color.parseColor("#050811"))
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
-                        addJavascriptInterface(GangouJsBridge(ctx.applicationContext, onAskAi, onOpenSettings), "GangouBridge")
+                        addJavascriptInterface(GangouJsBridge(ctx.applicationContext, onAskAi, onOpenSettings), onRunLinux, "GangouBridge")
                         @Suppress("DEPRECATION")
                         settings.databaseEnabled = true
                         settings.useWideViewPort = true

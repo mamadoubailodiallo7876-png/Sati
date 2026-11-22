@@ -393,7 +393,9 @@ registerAndroidCanvasPort(appContext)
     // 聊天页离开组合树时保留列表位置和输入内容，返回设置页等子页面后原样恢复。
     val screenStates = rememberSaveableStateHolder()
     when (nav.current) {
-       Route.CreatorPlugins -> GangouCanvasScreen()
+       Route.CreatorPlugins -> GangouCanvasScreen(onAskAi = { txt -> app.chat.send(txt, check) },
+                                                 onOpenSettings = { nav.pushFromDrawer(Route.Settings) },
+                                                 )
         Route.PhoneSetup -> PhoneSetupScreen(status, setupRepair, onFix, onboarding = onboarding == OnboardingStep.Phone) {
             phoneSetup.markGuideSeen()
             if (onboarding == OnboardingStep.Phone) goOnboarding(null) else nav.back()
@@ -412,7 +414,9 @@ registerAndroidCanvasPort(appContext)
                 },
             )
         }
-        Route.Chat -> GangouCanvasScreen()
+        Route.Chat -> GangouCanvasScreen(onAskAi = { txt -> app.chat.send(txt, check) },
+                                        onOpenSettings = { nav.pushFromDrawer(Route.Settings) },
+                                        )
         Route.Settings -> {
             val autonomous by app.approvals.autonomous.collectAsState()
             SettingsScreen(store, status, release, onFix, onBack = back, onOpenMemory = { nav.push(Route.Memory) }, onOpenBrowser = { nav.push(Route.Browser) },
@@ -483,6 +487,8 @@ onBack = { memoryRuntime.requestOpen(null); nav.back() },
 )
 }
     }
-        Route.Run, Route.Source, Route.Plans, Route.Screens -> GangouCanvasScreen()
+        Route.Run, Route.Source, Route.Plans, Route.Screens -> GangouCanvasScreen(onAskAi = { txt -> app.chat.send(txt, check) },
+                                                                                 onOpenSettings = { nav.pushFromDrawer(Route.Settings) },
+                                                                                 )
     }
 }

@@ -1,39 +1,39 @@
 ---
 name: documents
-display: 处理 PDF 文档
-description: 读 PDF 的文字、按页取、看文档信息,拆分合并后把文件交给用户
-aliases: ["读 PDF", "PDF 转文字", "合并 PDF"]
-terms: ["PDF", "文档", "提取文字", "按页", "合并", "拆分", "扫描件"]
+display: Traiter des documents PDF
+description: Lire le texte d'un PDF, extraire par page, consulter les métadonnées, diviser et fusionner puis remettre le fichier à l'utilisateur
+aliases: ["lire un PDF", "PDF en texte", "fusionner des PDF"]
+terms: ["PDF", "document", "extraire le texte", "par page", "fusionner", "diviser", "numérisation"]
 ---
-## 入口
+## Point d'entrée
 
-先看文档在哪:
-- 网上的公开链接:用 `web_navigate` 打开,内置浏览器能直接显示的,读页面就够了。
-- 用户发来的附件:在 `/workspace/inbox/`。
-- 网页上下载的文件:在 `/workspace/downloads/`,可以用 `web_downloads` 查下载记录。
+Vérifiez d'abord où se trouve le document :
+- Lien public en ligne : ouvrez-le avec `web_navigate` ; si le navigateur intégré peut l'afficher directement, il suffit de lire la page.
+- Pièce jointe envoyée par l'utilisateur : dans `/workspace/inbox/`.
+- Fichier téléchargé depuis une page web : dans `/workspace/downloads/`, vous pouvez consulter l'historique des téléchargements avec `web_downloads`.
 
-## 步骤
+## Étapes
 
-1. 文字型 PDF 用 `run_bundled_script` 跑 `scripts/extract_pdf.py`,`source` 填 `skills/documents`,文件路径相对 `/workspace` 写:
-   - 全文:`args: ["inbox/a.pdf"]`
-   - 指定页(从 1 数,可写 `3`、`1-5`、`1,4,7-9`):`args: ["inbox/a.pdf", "--pages", "1-5"]`
-   - 标题、作者、页数等信息(JSON):`args: ["inbox/a.pdf", "--metadata"]`
-   - 长文档先存成文本:`args: ["inbox/a.pdf", "--out", "a.txt"]`,再用 `read_file` 分段读,或用 `search_files` 找关键词。
-   - 有密码的:加 `--password` 和密码。
-2. 输出里每页以 `--- page N ---` 开头,引用时按它写页码。
-3. 拆分、合并、抽页用 `run_command` 写一小段 Python,调用 pypdf;新文件放在 `/workspace` 下。
-4. 做好的文件用 `share_file` 交给用户。
+1. Pour les PDF textuels, exécutez `scripts/extract_pdf.py` via `run_bundled_script`, en indiquant `skills/documents` pour `source`, avec un chemin de fichier relatif à `/workspace` :
+   - Texte intégral : `args: ["inbox/a.pdf"]`
+   - Pages précises (numérotées à partir de 1, ex. `3`, `1-5`, `1,4,7-9`) : `args: ["inbox/a.pdf", "--pages", "1-5"]`
+   - Titre, auteur, nombre de pages, etc. (JSON) : `args: ["inbox/a.pdf", "--metadata"]`
+   - Enregistrer d'abord les documents longs en texte : `args: ["inbox/a.pdf", "--out", "a.txt"]`, puis lire par segments avec `read_file` ou chercher des mots-clés avec `search_files`.
+   - Avec mot de passe : ajoutez `--password` suivi du mot de passe.
+2. Chaque page de la sortie commence par `--- page N ---` ; indiquez ce numéro de page lors des citations.
+3. Pour diviser, fusionner ou extraire des pages, utilisez `run_command` pour exécuter un court script Python appelant `pypdf` ; placez les nouveaux fichiers sous `/workspace`.
+4. Remettez le fichier final à l'utilisateur avec `share_file`.
 
-## 容易出错的地方
+## Points de vigilance
 
-- 脚本退出码为 3、提示没有可取的文字,说明是扫描出来的图片型 PDF;本机没有文字识别,只能看页面图片或告诉用户这一点。部分页没有文字时,脚本会单独报出这些页。
-- 表格、多栏排版取出来的顺序常常是乱的,引用表格里的数字前要对照原页。
-- 页码范围超出文档页数时脚本直接报错,先用 `--metadata` 看页数。
+- Si le script renvoie le code de sortie 3 et indique qu'aucun texte n'est extractible, il s'agit d'un PDF numérisé (image) ; cet appareil ne dispose pas de reconnaissance de texte (OCR), vous pouvez seulement consulter les images des pages ou en informer l'utilisateur. Si seules certaines pages sont sans texte, le script les signalera séparément.
+- L'ordre d'extraction des tableaux et des mises en page à plusieurs colonnes est souvent perturbé : vérifiez toujours les chiffres d'un tableau par rapport à la page d'origine avant de les citer.
+- Si la plage de pages dépasse le nombre de pages du document, le script échoue immédiatement : vérifiez d'abord le nombre de pages avec `--metadata`.
 
-## 怎样算办成(核实证据)
+## Critères de réussite (vérification)
 
-给出的文字能在脚本输出里对应到原页,并写了页码;交出去的文件 `share_file` 成功,页数和内容与预期一致(可以对新文件再跑一次 `--metadata` 核对页数)。
+Le texte fourni correspond bien aux pages d'origine dans la sortie du script avec les numéros de page indiqués ; le fichier remis via `share_file` a bien été envoyé et son nombre de pages ainsi que son contenu correspondent à ce qui était attendu (vous pouvez relancer `--metadata` sur le nouveau fichier pour vérifier le nombre de pages).
 
-## 什么时候停下交给用户
+## Quand s'arrêter et demander à l'utilisateur
 
-文档有密码而用户没给,或者需要用户决定保留哪些页、按什么顺序合并时,先问用户。
+Si le document est protégé par un mot de passe que l'utilisateur n'a pas fourni, ou s'il faut que l'utilisateur décide quelles pages conserver ou dans quel ordre les fusionner, demandez-lui d'abord.

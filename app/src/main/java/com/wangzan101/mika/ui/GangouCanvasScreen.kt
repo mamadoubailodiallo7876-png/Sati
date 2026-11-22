@@ -291,7 +291,8 @@ private class GangouJsBridge(
     private val onAsk: (String) -> Unit,
     private val onOpenSettings: () -> Unit,
     private val onRunLinux: (suspend (String) -> CommandResult)?,
-) {private val onCompleteAi: (suspend (String, String) -> String)?,
+    private val onCompleteAi: (suspend (String, String) -> String)?,
+) {
     private val main = Handler(Looper.getMainLooper())
     @JavascriptInterface fun ask(prompt: String) { if (prompt.isNotBlank()) main.post { onAsk(prompt.trim()) } }
     @JavascriptInterface fun runLinux(cmd: String, callbackName: String) {

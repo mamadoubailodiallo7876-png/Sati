@@ -1,7 +1,7 @@
 ---
 name: info-research
 display: Tirer une question au clair
-description: "Tirer une question au clair en ligne : explorer les pistes, lire les sources d'origine, recouper plusieurs sources, indiquer la source et la date"
+description: Rechercher et vérifier des infos sur le web.
 aliases: ["rechercher", "vérifier", "m'aider à comprendre"]
 apps: ["xiaohongshu", "zhihu", "bilibili", "weibo"]
 sites: ["zhihu.com", "tieba.baidu.com", "weibo.com", "douban.com"]

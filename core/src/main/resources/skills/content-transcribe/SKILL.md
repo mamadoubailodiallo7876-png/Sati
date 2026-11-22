@@ -1,7 +1,7 @@
 ---
 name: content-transcribe
 display: Mettre du contenu en texte
-description: "Mettre des vidéos, podcasts et articles en texte : résumé, chapitrage, citations ou réécriture en article"
+description: Transcrire audio, vidéo ou médias en texte.
 aliases: ["résumer une vidéo", "organiser un podcast", "résumé d'article", "extraire les sous-titres"]
 apps: ["bilibili", "xiaohongshu"]
 sites: ["youtube.com", "xiaoyuzhoufm.com"]

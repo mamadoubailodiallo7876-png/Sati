@@ -1,7 +1,7 @@
 ---
 name: messaging
 display: Messagerie et e-mails
-description: Lire les discussions et e-mails, rédiger des réponses, envoyer au bon destinataire et confirmer l'envoi
+description: Lire et envoyer des messages dans les applis.
 aliases: ["envoyer un message", "répondre à un message", "envoyer un e-mail", "voir les non lus"]
 apps: ["wechat", "feishu"]
 sites: ["instagram.com"]

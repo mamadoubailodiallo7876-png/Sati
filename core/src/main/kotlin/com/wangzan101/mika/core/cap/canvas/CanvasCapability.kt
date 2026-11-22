@@ -50,7 +50,7 @@ internal object CanvasSetUiTool : AgentTool {
 
     override suspend fun execute(a: Args, ctx: ToolContext): ToolExecution {
         val port = requireCanvas() ?: return failCode("canvas_unavailable")
-        val html = a.str("html", max = 250000).orEmpty()
+        val html = a.str("html", max = 500000).orEmpty()
         if (html.isBlank()) return failCode("missing_html")
         val res = runCatching {
             port.setUi(html, a.str("title", max = 120), a.str("summary", max = 300))
@@ -198,7 +198,10 @@ internal class CanvasCapability : Capability {
         - `GangouBridge.complete(prompt, callbackName, systemPrompt)` : interroge directement le modèle IA configuré (avec failover automatique) et appelle `window[callbackName]({ok, text, error})` sans modifier la toile.
 - `GangouBridge.kvSet(key, value)` / `kvGet(key)` / `kvDelete(key)` / `kvList()` : mémoire clé-valeur JSON persistante sur le téléphone, conservée même si on change d'espace ou réinitialise la toile.
 - `GangouBridge.undo()` / `redo()` / `reset()` / `openSettings()` / `saveSpace(nom)` / `loadSpace(nom)` / `listSpaces()`.
-        - `window.onGangouEvent = (evt) => { ... }` : reçoit en direct `{type: 'status', busy: true|false}` dès que l'IA commence ou finit une tâche.
+        - `GangouBridge.openBrowser(url)` / `openMemory()` : ouvrir le navigateur intégré (sur une URL optionnelle) ou l'écran Mémoire & Compétences.
+       - `GangouBridge.writeFile(relPath, content)` / `readFile(relPath)` : lire ou écrire un fichier directement dans `/workspace/gangou/` (sans échappement shell).
+      - `GangouBridge.copy(text)` / `toast(msg)` / `vibrate(ms)` : presse-papiers, notification Android et retour haptique natif.
+      - `window.onGangouEvent = (evt) => { ... }` : reçoit en direct `{type: 'status', busy: true|false}` dès que l'IA commence ou finit une tâche.
         """.trimIndent()
     )
 }

@@ -369,7 +369,8 @@ fun SettingsContent(
         GroupCard {
             onOpenMemory?.let {
                 ListRow(MikaIcons.Heart, stringResource(R.string.settings_memory_data), stringResource(R.string.settings_memory_sub), first = true, onClick = it) { RowChevron() }
-            } if (onOpenBrowser != null) { ListRow(MikaIcons.Globe, "Navigateur intégré", "Ouvrir le navigateur de Mika", onClick = onOpenBrowser) }
+            }  
+            if (onOpenBrowser != null) { ListRow(MikaIcons.Globe, "Navigateur intégré", "Ouvrir le navigateur de Mika", onClick = onOpenBrowser) }
             ListRow(MikaIcons.Shield, stringResource(R.string.appaccess_title), stringResource(R.string.appaccess_row_sub), first = onOpenMemory == null, onClick = onOpenAppAccess) { RowChevron() }
         }
 

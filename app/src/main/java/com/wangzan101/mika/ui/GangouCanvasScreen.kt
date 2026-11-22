@@ -84,7 +84,13 @@ object GangouCanvasState {
     private fun currentFile(ctx: Context): File = File(rootDir(ctx), "current.html")
     private fun metaFile(ctx: Context): File = File(rootDir(ctx), "meta.json")
     private fun spacesDir(ctx: Context): File = File(rootDir(ctx), "spaces").apply { if (!exists()) mkdirs() }
-
+    private fun kvFile(ctx: Context): File = File(rootDir(ctx), "kv.json")
+    @Synchronized private fun readKvObj(ctx: Context): JSONObject = runCatching { val f = kvFile(ctx); if (f.exists()) JSONObject(f.readText(Charsets.UTF_8)) else JSONObject() }.getOrElse { JSONObject() }
+    @Synchronized private fun writeKvObj(ctx: Context, obj: JSONObject) { runCatching { kvFile(ctx).writeText(obj.toString(), Charsets.UTF_8) } }
+    fun kvGet(ctx: Context, key: String): String = readKvObj(ctx).optString(key, "")
+    fun kvSet(ctx: Context, key: String, value: String) { val obj = readKvObj(ctx); obj.put(key, value); writeKvObj(ctx, obj) }
+    fun kvDelete(ctx: Context, key: String) { val obj = readKvObj(ctx); obj.remove(key); writeKvObj(ctx, obj) }
+    fun kvList(ctx: Context): String = readKvObj(ctx).toString()
     fun loadFromDisk(ctx: Context) {
         if (renderVersion > 0) return
         runCatching {
@@ -285,7 +291,7 @@ private class GangouJsBridge(
     private val onAsk: (String) -> Unit,
     private val onOpenSettings: () -> Unit,
     private val onRunLinux: (suspend (String) -> CommandResult)?,
-) {
+) {private val onCompleteAi: (suspend (String, String) -> String)?,
     private val main = Handler(Looper.getMainLooper())
     @JavascriptInterface fun ask(prompt: String) { if (prompt.isNotBlank()) main.post { onAsk(prompt.trim()) } }
     @JavascriptInterface fun runLinux(cmd: String, callbackName: String) {
@@ -319,8 +325,18 @@ private class GangouJsBridge(
         return "Chargement de $name"
     }
     @JavascriptInterface fun listSpaces(): String = JSONArray(GangouCanvasState.listSpaces(appCtx)).toString()
+    @JavascriptInterface fun kvGet(key: String): String = GangouCanvasState.kvGet(appCtx, key)
+    @JavascriptInterface fun kvSet(key: String, value: String) { GangouCanvasState.kvSet(appCtx, key, value) }
+    @JavascriptInterface fun kvDelete(key: String) { GangouCanvasState.kvDelete(appCtx, key) }
+    @JavascriptInterface fun kvList(): String = GangouCanvasState.kvList(appCtx)
+    @JavascriptInterface fun complete(prompt: String, callbackName: String, systemPrompt: String = "") {
+        if (prompt.isBlank() || callbackName.isBlank()) return
+        val fn = onCompleteAi ?: return
+        val safeCb = callbackName.replace(Regex("[^a-zA-Z0-9_.$]"), "")
+        val sys = systemPrompt.ifBlank { "Tu es l'assistant intégré de Gangou. Réponds clairement et directement en français." }
+        CoroutineScope(Dispatchers.IO).launch { val payload = runCatching { val text = fn(sys, prompt); JSONObject().apply { put("ok", true); put("text", text) } }.getOrElse { err -> JSONObject().apply { put("ok", false); put("error", err.message ?: "Erreur IA") } }.toString(); main.post { GangouCanvasState.webViewRef?.evaluateJavascript("if(typeof window['$safeCb']==='function'){window['$safeCb']($payload);}", null) } }
+    }
 }
-
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun GangouCanvasScreen(
@@ -328,7 +344,8 @@ fun GangouCanvasScreen(
     onOpenSettings: () -> Unit = {},
     isBusy: Boolean = false,
     onRunLinux: (suspend (String) -> CommandResult)? = null,
-) {
+    onCompleteAi: (suspend (String, String) -> String)? = null,
+ ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) { GangouCanvasState.loadFromDisk(context) }
     LaunchedEffect(isBusy) {
@@ -363,7 +380,7 @@ fun GangouCanvasScreen(
                         setBackgroundColor(android.graphics.Color.parseColor("#050811"))
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
-                        addJavascriptInterface(GangouJsBridge(ctx.applicationContext, onAskAi, onOpenSettings, onRunLinux), "GangouBridge")
+                        addJavascriptInterface(GangouJsBridge(ctx.applicationContext, onAskAi, onOpenSettings, onRunLinux, onCompleteAi), "GangouBridge")
                         @Suppress("DEPRECATION")
                         settings.databaseEnabled = true
                         settings.useWideViewPort = true

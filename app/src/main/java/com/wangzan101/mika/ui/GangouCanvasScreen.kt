@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
 import android.webkit.JsResult
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
@@ -239,9 +240,32 @@ fun registerAndroidCanvasPort(context: Context) {
         }
     }
 }
+
+private class GangouJsBridge(
+    private val appCtx: Context,
+    private val onAsk: (String) -> Unit,
+    private val onOpenSettings: () -> Unit,
+) {
+    private val main = Handler(Looper.getMainLooper())
+    @JavascriptInterface fun ask(prompt: String) { if (prompt.isNotBlank()) main.post { onAsk(prompt.trim()) } }
+    @JavascriptInterface fun undo() { main.post { GangouCanvasState.undo(appCtx) } }
+    @JavascriptInterface fun redo() { main.post { GangouCanvasState.redo(appCtx) } }
+    @JavascriptInterface fun reset() { main.post { GangouCanvasState.reset(appCtx) } }
+    @JavascriptInterface fun openSettings() { main.post { onOpenSettings() } }
+    @JavascriptInterface fun saveSpace(name: String): String = GangouCanvasState.saveSpace(appCtx, name)
+    @JavascriptInterface fun loadSpace(name: String): String {
+        main.post { GangouCanvasState.loadSpace(appCtx, name) }
+        return "Chargement de $name"
+    }
+    @JavascriptInterface fun listSpaces(): String = JSONArray(GangouCanvasState.listSpaces(appCtx)).toString()
+}
+
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun GangouCanvasScreen() {
+fun GangouCanvasScreen(
+    onAskAi: (String) -> Unit = {},
+    onOpenSettings: () -> Unit = {},
+) {
     val context = LocalContext.current
     LaunchedEffect(Unit) { GangouCanvasState.loadFromDisk(context) }
 
@@ -266,6 +290,7 @@ fun GangouCanvasScreen() {
                         setBackgroundColor(android.graphics.Color.parseColor("#050811"))
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
+                        addJavascriptInterface(GangouJsBridge(ctx.applicationContext, onAskAi, onOpenSettings), "GangouBridge")
                         @Suppress("DEPRECATION")
                         settings.databaseEnabled = true
                         settings.useWideViewPort = true

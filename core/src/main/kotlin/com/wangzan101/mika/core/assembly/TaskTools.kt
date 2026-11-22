@@ -10,6 +10,9 @@ import com.wangzan101.mika.core.cap.root.RootGroup
 import com.wangzan101.mika.core.cap.plugin.PLUGINS_CAP
 import com.wangzan101.mika.core.cap.plugin.PluginCapability
 import com.wangzan101.mika.core.cap.plugin.PluginGroup
+import com.wangzan101.mika.core.cap.canvas.CANVAS_CAP
+import com.wangzan101.mika.core.cap.canvas.CanvasCapability
+import com.wangzan101.mika.core.cap.canvas.CanvasGroup
 import com.wangzan101.mika.core.cap.root.RootPort
 import com.wangzan101.mika.core.cap.sandbox.SandboxCapability
 import com.wangzan101.mika.core.cap.sandbox.SANDBOX
@@ -146,6 +149,10 @@ fun toolDispatcher(
             override val id = PLUGINS_CAP
             override fun open(spec: RunSpec) = PluginCapability()
         },
+        object : CapabilityProvider {
+            override val id = CANVAS_CAP
+            override fun open(spec: RunSpec) = CanvasCapability()
+            },
     ) + listOfNotNull(root?.let { port ->
         object : CapabilityProvider {
             override val id = RootCapability.KEY.name
@@ -197,7 +204,7 @@ fun recordedTools(): ToolIndex = legacyNames().let { legacy -> ToolIndex(allTool
 
 /** Mika 所有可能提供的工具,按发给模型的顺序。 */
 internal fun allTools(): List<AgentTool> =
-    GeneralGroup.tools + PhoneCapability.tools() + WebGroup.tools + SandboxGroup.tools + RootGroup.tools + PluginGroup.tools
+    GeneralGroup.tools + PhoneCapability.tools() + WebGroup.tools + SandboxGroup.tools + RootGroup.tools + PluginGroup.tools + CanvasGroup.tools
 
 /** Mika 所有可能提供的工具的声明。 */
 fun knownTools(): ToolIndex = ToolIndex(allTools())

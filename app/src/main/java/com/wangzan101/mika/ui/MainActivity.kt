@@ -1,6 +1,8 @@
 package com.wangzan101.mika.ui
 
 import com.wangzan101.mika.i18n.AppLanguage
+import com.wangzan101.mika.cap.sandbox.AndroidSandbox
+import com.wangzan101.mika.cap.sandbox.SandboxState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import com.wangzan101.mika.ui.components.KeyboardDismissArea
@@ -324,6 +326,7 @@ private fun MikaRoot(
     // 查到的新版本:侧栏、设置首页、关于页的红点都看它
     val updateState by app.updates.state.collectAsState()
 val gangouChatUi by app.chat.ui.collectAsState()
+    val gangouSandbox = remember { AndroidSandbox(app, SandboxState.get(app)) }
     LaunchedEffect(requestedConversation) {
         if (requestedConversation != null) {
             app.chat.openConversation(requestedConversation)
@@ -393,8 +396,8 @@ registerAndroidCanvasPort(appContext)
     // 聊天页离开组合树时保留列表位置和输入内容，返回设置页等子页面后原样恢复。
     val screenStates = rememberSaveableStateHolder()
     when (nav.current) {
-       Route.CreatorPlugins -> GangouCanvasScreen(onAskAi = { txt -> app.chat.send(txt, check) },
-                                                 onOpenSettings = { nav.pushFromDrawer(Route.Settings) },
+       Route.CreatorPlugins -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onAskAi = { txt -> app.chat.send(txt, check) },
+                                                 onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
                                                  )
         Route.PhoneSetup -> PhoneSetupScreen(status, setupRepair, onFix, onboarding = onboarding == OnboardingStep.Phone) {
             phoneSetup.markGuideSeen()
@@ -414,8 +417,8 @@ registerAndroidCanvasPort(appContext)
                 },
             )
         }
-        Route.Chat -> GangouCanvasScreen(onAskAi = { txt -> app.chat.send(txt, check) },
-                                        onOpenSettings = { nav.pushFromDrawer(Route.Settings) },
+        Route.Chat -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onAskAi = { txt -> app.chat.send(txt, check) },
+                                        onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
                                         )
         Route.Settings -> {
             val autonomous by app.approvals.autonomous.collectAsState()
@@ -487,8 +490,8 @@ onBack = { memoryRuntime.requestOpen(null); nav.back() },
 )
 }
     }
-        Route.Run, Route.Source, Route.Plans, Route.Screens -> GangouCanvasScreen(onAskAi = { txt -> app.chat.send(txt, check) },
-                                                                                 onOpenSettings = { nav.pushFromDrawer(Route.Settings) },
+        Route.Run, Route.Source, Route.Plans, Route.Screens -> GangouCanvasScreen(isBusy = gangouChatUi.composer == ComposerMode.Busy, onAskAi = { txt -> app.chat.send(txt, check) },
+                                                                                 onOpenSettings = { nav.pushFromDrawer(Route.Settings) }, onRunLinux = { cmd -> gangouSandbox.run("gangou", listOf("sh", "-c", cmd), null, 15_000L) {} },
                                                                                  )
     }
 }

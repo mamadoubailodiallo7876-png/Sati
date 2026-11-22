@@ -126,21 +126,40 @@ for base in ["app/src/main/java", "core/src/main/kotlin", "app/src/main/res"]:
             if new_txt != txt:
                 open(path, "w", encoding="utf-8").write(new_txt)
 def replace_mika_and_zh():
-    def sub_mika(txt, ex=()):
-        pat = r"(https?://\S+|com\.wangzan101\.mika\S*" + "".join("|" + x for x in ex) + r")|\bMika\b"
-        return re.sub(pat, lambda m: m.group(1) or "Gangou", txt)
-    configs = [("app/src/main/res", (".xml",), (), False, False), ("core/src/main/resources/prompts", (".md", ".txt", ".py", ".json", ".xml"), ("configure-mika",), True, True), ("core/src/main/resources/skills", (".md", ".txt", ".py", ".json", ".xml"), ("configure-mika",), True, True)]
+    def sub_mika(m):
+        w = m.group(0)
+        return "GANGOU" if w.isupper() else "Gangou"
+
+    def clean_text(txt, do_rep, do_zh):
+        nt = txt
+        if do_rep:
+            for zh, fr in REPLACEMENTS:
+                nt = nt.replace(zh, fr)
+        if do_zh:
+            nt = re.sub(r"[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]+", "", nt)
+        nt = re.sub(r"(?<!\.)\b(Mika|MIKA)\b(?![.\-/])", sub_mika, nt)
+        return nt
+
+    configs = [
+        ("app/src/main/res", (".xml",), ("values-zh",), False, False),
+        ("core/src/main/resources/prompts", (".md", ".txt", ".json"), (), True, True),
+        ("core/src/main/resources/skills", (".md", ".txt", ".py", ".json"), ("configure-mika",), True, True),
+    ]
     for base, exts, ex, do_rep, do_zh in configs:
-    if not os.path.isdir(base): continue
-       for r, _, files in os.walk(base):
-           for fn in files:
-               if not fn.endswith(exts): continue
-                   p = os.path.join(r, fn); t = open(p, "r", encoding="utf-8").read(); nt = t
-                    if do_rep:
-                       for zh, fr in REPLACEMENTS: nt = nt.replace(zh, fr)
-                    nt = sub_mika(nt, ex)
-                    if do_zh: nt = re.sub(r"[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]+", "", nt)
-                    if nt != t: open(p, "w", encoding="utf-8").write(nt)
+        if not os.path.isdir(base):
+            continue
+        for r, _, files in os.walk(base):
+            if any(x in r for x in ex):
+                continue
+            for fn in files:
+                if not fn.endswith(exts):
+                    continue
+                p = os.path.join(r, fn)
+                t = open(p, "r", encoding="utf-8").read()
+                nt = clean_text(t, do_rep, do_zh)
+                if nt != t:
+                    open(p, "w", encoding="utf-8").write(nt)
+
 replace_mika_and_zh()
 
 id_path = "core/src/main/resources/prompts/system/identity.md"

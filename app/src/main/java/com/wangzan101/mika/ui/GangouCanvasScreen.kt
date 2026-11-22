@@ -238,21 +238,11 @@ fun registerAndroidCanvasPort(context: Context) {
         }
     }
 }
-
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun GangouCanvasScreen(
-    isBusy: Boolean,
-    onSendPrompt: (String) -> Boolean,
-    onOpenSettings: () -> Unit,
-) {
+fun GangouCanvasScreen() {
     val context = LocalContext.current
     LaunchedEffect(Unit) { GangouCanvasState.loadFromDisk(context) }
-
-    var sheetOpen by remember { mutableStateOf(false) }
-    var promptText by remember { mutableStateOf("") }
-    var orbOffsetX by remember { mutableFloatStateOf(0f) }
-    var orbOffsetY by remember { mutableFloatStateOf(0f) }
 
     val html = GangouCanvasState.currentHtml
     val version = GangouCanvasState.renderVersion
@@ -312,157 +302,6 @@ fun GangouCanvasScreen(
                     }
                 }
             )
-        }
-
-        // Floating status pill when AI is building
-        if (isBusy) {
-            Surface(
-                shape = RoundedCornerShape(999.dp),
-                color = Color(0xE60F172A),
-                border = BorderStroke(1.dp, Color(0xFF38BDF8)),
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 12.dp)
-            ) {
-                Text(
-                    text = "✦ Gangou construit ton espace...",
-                    color = Color(0xFF38BDF8),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
-                )
-            }
-        }
-
-        // Floating Command Sheet
-        if (sheetOpen) {
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = Color(0xF50C1222),
-                border = BorderStroke(1.dp, Color(0xFF253456)),
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(start = 14.dp, end = 14.dp, bottom = 84.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "✦ Gangou · ${GangouCanvasState.currentTitle}",
-                            color = Color(0xFFF8FAFC),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        TextButton(onClick = { sheetOpen = false }) {
-                            Text("Fermer", color = Color(0xFF94A3B8), fontSize = 12.sp)
-                        }
-                    }
-                    if (GangouCanvasState.lastSummary.isNotBlank()) {
-                        Text(
-                        text = GangouCanvasState.lastSummary,
-                        color = Color(0xFF94A3B8),
-                        fontSize = 11.5.sp,
-                        maxLines = 2
-                        )
-                    }
-                    OutlinedTextField(
-                        value = promptText,
-                        onValueChange = { promptText = it },
-                        placeholder = { Text("Décris l'OS, le harness ou l'espace que tu veux...", fontSize = 13.sp) },
-                        minLines = 2,
-                        maxLines = 4,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            enabled = promptText.isNotBlank(),
-                            onClick = {
-                                val sent = onSendPrompt(promptText.trim())
-                                if (sent) {
-                                    promptText = ""
-                                    sheetOpen = false
-                                }
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(if (isBusy) "Envoi..." else "✦ Créer / Modifier")
-                        }
-                        OutlinedButton(
-                            enabled = GangouCanvasState.canUndo,
-                            onClick = { GangouCanvasState.undo(context) }
-                        ) { Text("↶") }
-                        OutlinedButton(
-                            enabled = GangouCanvasState.canRedo,
-                            onClick = { GangouCanvasState.redo(context) }
-                        ) { Text("↷") }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-                                GangouCanvasState.reset(context)
-                                Toast.makeText(context, "Toile blanche", Toast.LENGTH_SHORT).show()
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) { Text("Toile vide", fontSize = 12.sp) }
-                        OutlinedButton(
-                            onClick = { sheetOpen = false; onOpenSettings() },
-                            modifier = Modifier.weight(1f)
-                        ) { Text("Réglages", fontSize = 12.sp) }
-                    }
-                }
-            }
-        }
-
-        // Movable Floating Orb Button (always on top!)
-        Surface(
-            onClick = { sheetOpen = !sheetOpen },
-            shape = CircleShape,
-            color = Color.Transparent,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(18.dp)
-                .offset { IntOffset(orbOffsetX.roundToInt(), orbOffsetY.roundToInt()) }
-                .size(56.dp)
-                .shadow(12.dp, CircleShape)
-                .pointerInput(Unit) {
-                    detectDragGestures { change, dragAmount ->
-                        change.consume()
-                        orbOffsetX += dragAmount.x
-                        orbOffsetY += dragAmount.y
-                    }
-                }
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.linearGradient(listOf(Color(0xFF38BDF8), Color(0xFF818CF8), Color(0xFFA855F7))),
-                        CircleShape
-                    )
-            ) {
-                Text(
-                    text = if (sheetOpen) "✕" else "✦",
-                    color = Color.White,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
         }
     }
 }

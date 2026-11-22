@@ -1,38 +1,38 @@
 ---
 name: info-research
-display: 查清一件事
-description: 在网上把一件事查清楚:找方向、读原始出处、多方核对,写明出处和时间
-aliases: ["调研", "查一下", "帮我了解"]
+display: Tirer une question au clair
+description: "Tirer une question au clair en ligne : explorer les pistes, lire les sources d'origine, recouper plusieurs sources, indiquer la source et la date"
+aliases: ["rechercher", "vérifier", "m'aider à comprendre"]
 apps: ["xiaohongshu", "zhihu", "bilibili", "weibo"]
 sites: ["zhihu.com", "tieba.baidu.com", "weibo.com", "douban.com"]
-terms: ["调研", "查一下", "了解", "背景", "对比", "靠不靠谱", "出处", "最新"]
+terms: ["recherche", "vérifier", "comprendre", "contexte", "comparaison", "fiable", "source", "récent"]
 ---
-## 入口
+## Point d'entrée
 
-先把要查的对象定下来:全称、地区、时间段、版本或型号。有重名、说法有歧义时问用户一次,等回答的同时先查不受这个问题影响的部分。用户没给的条件(比如时间范围),自己选一组常见的,在结论开头写明用的是哪一组。
+Définissez d'abord précisément l'objet de la recherche : nom complet, région, période, version ou modèle. En cas d'homonymie ou d'ambiguïté, posez la question une seule fois à l'utilisateur, tout en commençant à chercher les éléments non concernés par cette ambiguïté en attendant sa réponse. Pour les critères non précisés par l'utilisateur (comme la période), choisissez un jeu de critères courants et précisez en début de conclusion lequel vous avez retenu.
 
-起步用 `web_navigate` 打开搜索页(百度、必应),或在相关 App 里用站内搜索。
+Pour démarrer, ouvrez un moteur de recherche (Baidu, Bing) avec `web_navigate`, ou utilisez la recherche interne dans l'application concernée.
 
-## 步骤
+## Étapes
 
-1. **找方向**:先做两三次宽一些的搜索,看这件事有哪些说法、哪些网站在讲、有没有权威的发布方。站内搜索用两到四个关键词,不用整句提问。
-2. **找原始出处**:用户直接问的那个事实,追到最早发布它的地方:发布方自己的网站、官方公告、原始文件、论文原文、产品或服务本身的页面。新闻和转载只当线索,顺着它们给的链接或名称找原文。
-3. **补体验和反面**:真实使用感受看社区和视频平台(小红书、知乎、贴吧、微博、B 站、豆瓣),问题看投诉平台。专门搜一次反面的词(「问题」「投诉」「缺点」)。
-4. **交叉核对**:关键结论至少在两个互不相干的来源里读到原文。两边说法不一致时,看发布时间、看哪一方离事情更近,并把分歧本身写出来。
-5. **写结论**:每条结论后面写出处(网站或发布方)和那条内容的时间;原文说的和自己推断的分开写;查过但没查到的,写清查了哪些地方、还缺什么。
+1. **Explorer les pistes** : effectuez d'abord deux ou trois recherches assez larges pour voir quelles versions existent, quels sites en parlent et s'il existe une source officielle faisant autorité. Pour une recherche sur un site, utilisez deux à quatre mots-clés plutôt qu'une phrase entière.
+2. **Trouver la source d'origine** : pour le fait sur lequel porte directement la question de l'utilisateur, remontez jusqu'au lieu de publication initial : le site de l'émetteur, une annonce officielle, un document original, le texte d'un article scientifique, ou la page même du produit ou service. Les articles de presse et reprises ne servent que de pistes : suivez les liens ou noms qu'ils citent pour retrouver le texte original.
+3. **Compléter avec les retours d'expérience et les avis négatifs** : consultez les plateformes communautaires et vidéo (Xiaohongshu, Zhihu, Tieba, Weibo, Bilibili, Douban) pour les retours d'usage réels, et les plateformes de réclamations pour les problèmes. Effectuez une recherche dédiée avec des termes critiques (« problème », « réclamation », « défaut »).
+4. **Recouper les informations** : vérifiez les conclusions clés dans le texte original d'au moins deux sources indépendantes. Lorsque deux versions divergent, examinez la date de publication, voyez laquelle est la plus proche des faits, et exposez clairement la divergence elle-même.
+5. **Rédiger la conclusion** : indiquez après chaque conclusion sa source (site ou organisme émetteur) et la date de l'information ; distinguez clairement ce qui figure dans le texte original de ce que vous déduisez ; pour ce que vous avez cherché sans succès, précisez quels endroits ont été consultés et ce qui manque encore.
 
-## 容易出错的地方
+## Points de vigilance
 
-- 搜索结果的摘要不是原文,常常截断或过时;要用 `web_read_page` 打开读正文,并看清最终落在哪个网站。
-- 同一篇通稿会被很多网站转载,看起来来源很多,其实只有一个出处。
-- 推广文、带购买链接的测评和匿名爆料可信度低,用到时要标明。
-- 页面上的日期可能是转载或更新的日期,不一定是事情发生的时间。
-- 没搜到、页面打不开、被登录页挡住,都只说明这一次没读到,不能当成「没有这回事」。
+- L'extrait affiché dans les résultats de recherche n'est pas le texte intégral et est souvent tronqué ou obsolète ; ouvrez la page avec `web_read_page` pour lire le corps du texte et vérifiez bien sur quel site vous arrivez au final.
+- Un même communiqué repris par de nombreux sites donne l'impression de sources multiples alors qu'il n'y a en réalité qu'une seule origine.
+- Les articles sponsorisés, tests avec liens d'achat et rumeurs anonymes ont une faible fiabilité : signalez-le si vous les utilisez.
+- La date affichée sur une page peut être celle d'une republication ou d'une mise à jour, et non nécessairement celle de l'événement lui-même.
+- Une recherche infructueuse, une page inaccessible ou bloquée par une fenêtre de connexion signifie simplement que vous n'avez pas pu lire l'information cette fois-ci, et non que « cela n'existe pas ».
 
-## 怎样算办成(核实证据)
+## Critères de réussite (vérification)
 
-每条结论都能指回这次实际读过的某个页面,写着出处和时间;关键结论有两个独立来源;薄弱或互相矛盾的地方说明了原因。
+Chaque conclusion peut être reliée à une page effectivement lue lors de cette session, avec indication de la source et de la date ; les conclusions clés s'appuient sur deux sources indépendantes ; les points faibles ou contradictoires sont expliqués.
 
-## 什么时候停下交给用户
+## Quand s'arrêter et demander à l'utilisateur
 
-要看的内容得登录才能看,或者下一步变成预约、购买、报名这类要用户本人决定或付钱的事时,把查到的结果交给用户。
+Si le contenu à consulter nécessite une connexion, ou si l'étape suivante implique une action personnelle ou financière de l'utilisateur (réservation, achat, inscription), transmettez-lui les résultats trouvés.

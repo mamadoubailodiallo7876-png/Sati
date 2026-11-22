@@ -1,7 +1,7 @@
 ---
 name: documents
 display: Traiter des documents PDF
-description: Lire le texte d'un PDF, extraire par page, consulter les métadonnées, diviser et fusionner puis remettre le fichier à l'utilisateur
+description: Lire, créer et convertir des documents.
 aliases: ["lire un PDF", "PDF en texte", "fusionner des PDF"]
 terms: ["PDF", "document", "extraire le texte", "par page", "fusionner", "diviser", "numérisation"]
 ---

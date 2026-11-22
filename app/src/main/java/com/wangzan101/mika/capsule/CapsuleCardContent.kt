@@ -157,6 +157,7 @@ interface CardActions {
     fun answer(runKey: String, text: String)
     fun approve(runKey: String, requestKey: Int)
     fun decline(runKey: String, requestKey: Int)
+    fun openSettings() {}
     fun openMika(conversationId: String)
     fun zoom(on: Boolean)
     /** 点了底部的输入框:这时浮层才改成能接收键盘。 */
@@ -533,7 +534,7 @@ private fun CardFrame(height: Dp, fixed: Boolean = true, content: @Composable Co
 private fun Header(title: String, sub: String, actions: CardActions, handle: Modifier) {
     val c = MikaTheme.colors
     Row(handle.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        MikaLogo(28.dp, corner = 14.dp)
+        Box(modifier = Modifier.clickable { actions.openSettings() }) { MikaLogo(28.dp, corner = 14.dp) }
         Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
             Text(title, style = Title, color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(sub, style = Sub, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -549,7 +550,7 @@ private fun IdleHeader(card: CardView.Chat, actions: CardActions, handle: Modifi
     val c = MikaTheme.colors
     val continuing = !card.fresh && card.conversationId != null
     Row(handle.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        MikaLogo(28.dp, corner = 14.dp)
+        Box(modifier = Modifier.clickable { actions.openSettings() }) { MikaLogo(28.dp, corner = 14.dp) }
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 if (continuing) tr(R.string.card_continuing, card.title.orEmpty().let(ScreenCopy::plain).let { if (it.length > TITLE_MAX) it.take(TITLE_MAX) + "…" else it }) else CardCopy.NEW_CHAT,

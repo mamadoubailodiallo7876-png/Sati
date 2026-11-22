@@ -1,35 +1,35 @@
 ---
 name: messaging
-display: 消息与邮件
-description: 读聊天记录和邮件、拟回复,发给对的人并确认已发出
-aliases: ["发消息", "回消息", "发邮件", "看未读"]
+display: Messagerie et e-mails
+description: Lire les discussions et e-mails, rédiger des réponses, envoyer au bon destinataire et confirmer l'envoi
+aliases: ["envoyer un message", "répondre à un message", "envoyer un e-mail", "voir les non lus"]
 apps: ["wechat", "feishu"]
 sites: ["instagram.com"]
-terms: ["发消息", "回复", "邮件", "聊天", "群", "未读", "转告", "草稿"]
+terms: ["envoyer un message", "répondre", "e-mail", "discussion", "groupe", "non lu", "transférer", "brouillon"]
 ---
-## 入口
+## Point d'entrée
 
-先分清用户要读、要拟稿还是要发,以及用哪个 App、哪个账号。用户点名的 App 就用那个 App;它打不开或没登录时,如实告诉用户。
+Déterminez d'abord si l'utilisateur souhaite lire, rédiger un brouillon ou envoyer, ainsi que l'application et le compte à utiliser. Utilisez l'application demandée par l'utilisateur ; si elle ne s'ouvre pas ou n'est pas connectée, informez-en honnêtement l'utilisateur.
 
-## 步骤
+## Étapes
 
-1. **读**:先看会话列表或收件箱,找到对的会话后打开读正文;需要时往上翻更早的记录,留意发件人、时间、群成员和附件。未读以列表里的红点和数字为准。
-2. **找对象**:按备注名、昵称、群名或邮箱找到收件人,遇到同名的联系人、群或公众号,打开资料核对。邮件地址用通讯录或往来邮件里的真实地址。
-3. **拟稿**:按用户的意思写好。用户只要稿子时把稿子给用户,到这里为止;用户要发的,写好就发,不用先问。
-4. **发**:进到正确的会话或写信页,输入正文、加附件,发出前再看一遍收件人和全文。
-5. **核对**:发出后在会话里找到这条消息的气泡,或在邮箱的「已发送」里找到这封信,并看有没有发送失败的标记。
+1. **Lire** : Consultez d'abord la liste des discussions ou la boîte de réception, trouvez la bonne conversation et ouvrez-la pour lire le contenu ; remontez plus haut dans l'historique si nécessaire, en faisant attention à l'expéditeur, à l'heure, aux membres du groupe et aux pièces jointes. Fiez-vous aux pastilles rouges et aux compteurs de la liste pour les messages non lus.
+2. **Trouver le destinataire** : Recherchez le destinataire par son nom de note, pseudonyme, nom de groupe ou adresse e-mail ; en cas de contacts, groupes ou comptes officiels homonymes, ouvrez leur fiche pour vérifier. Pour les adresses e-mail, utilisez l'adresse réelle issue du carnet d'adresses ou des échanges précédents.
+3. **Rédiger un brouillon** : Rédigez selon les intentions de l'utilisateur. S'il ne demande qu'un brouillon, remettez-lui le texte et arrêtez-vous là ; s'il demande d'envoyer, rédigez et envoyez directement sans demander confirmation.
+4. **Envoyer** : Accédez à la bonne discussion ou page de rédaction, saisissez le texte, ajoutez les pièces jointes, puis revérifiez le destinataire et l'ensemble du contenu avant d'envoyer.
+5. **Vérifier** : Après l'envoi, retrouvez la bulle du message dans la discussion ou l'e-mail dans le dossier « Envoyés », et vérifiez qu'il n'y a aucune icône d'échec d'envoi.
 
-## 容易出错的地方
+## Erreurs fréquentes
 
-- 搜索结果里的同名对象很多,头像和备注不一样,点错就发错人。
-- 输入框清空不等于发出去了;网络差时消息可能停在「发送中」或带红色感叹号。没看到发出的消息,先回会话里查状态,再决定要不要重发,免得发两遍。
-- 有的输入法或键盘设置下按回车就直接发送,多行内容要用换行键或分段输入。
-- 会话列表里的预览只有开头一截,不等于全文。
+- Les résultats de recherche contiennent souvent des homonymes avec des avatars et des notes différents ; cliquer sur le mauvais entraîne une erreur de destinataire.
+- Un champ de saisie vidé ne signifie pas que le message a été envoyé ; avec une mauvaise connexion, il peut rester bloqué sur « Envoi en cours » ou afficher un point d'exclamation rouge. Si vous ne voyez pas le message envoyé, vérifiez d'abord son statut dans la discussion avant de décider de renvoyer, afin d'éviter les doublons.
+- Avec certains claviers ou méthodes de saisie, appuyer sur Entrée envoie directement le message ; utilisez le saut de ligne pour saisir du texte sur plusieurs lignes.
+- L'aperçu dans la liste des discussions ne montre que le début du message, pas le texte intégral.
 
-## 怎样算办成(核实证据)
+## Critères de réussite (preuves de vérification)
 
-读:给出的要点和时间都来自打开后的会话或邮件正文。发:会话里能看到这条已发出的消息,或「已发送」里有这封信,收件人和内容都对。
+Lecture : les points clés et les horaires fournis proviennent tous de la discussion ou du corps de l'e-mail ouvert. Envoi : le message envoyé est visible dans la discussion ou l'e-mail figure dans « Envoyés », avec le bon destinataire et le bon contenu.
 
-## 什么时候停下交给用户
+## Quand passer la main à l'utilisateur
 
-需要登录、输入验证码,或者对象和内容有不止一种可能、要用户来选的时候,交给用户。
+Passez la main à l'utilisateur lorsqu'une connexion ou un code de vérification est requis, ou lorsque le destinataire ou le contenu présente plusieurs possibilités et que l'utilisateur doit choisir.

@@ -81,7 +81,7 @@ fun SettingsScreen(
     onFix: (Fix) -> Unit,
     onBack: () -> Unit,
     onOpenModels: () -> Unit,
-    onOpenMemory: (() -> Unit)? = null,
+    onOpenMemory: (() -> Unit)? = null, onOpenBrowser: (() -> Unit)? = null,
     /** 任务运行里的「自主模式」:当前值和换它的办法。 */
     autonomous: Boolean = false,
     onAutonomous: (Boolean) -> Unit = {},
@@ -183,7 +183,7 @@ fun SettingsScreen(
             capsuleMode = capsuleMode, onOpenCapsule = { page = SettingsPage.Capsule },
             onOpenNotifications = { page = SettingsPage.Notifications },
             language = language, onOpenLanguage = { page = SettingsPage.Language },
-            onOpenMemory = onOpenMemory,
+            onOpenMemory = onOpenMemory, onOpenBrowser = onOpenBrowser,
             onOpenAdvanced = { page = SettingsPage.Advanced },
             versionName = BuildConfig.VERSION_NAME, updateVersion = updateVersion, onOpenAbout = onOpenAbout,
         )
@@ -325,7 +325,7 @@ fun SettingsContent(
     /** 此刻选的界面语言,写在「语言与外观」一行的右边。 */
     language: AppLanguage = AppLanguage.System,
     onOpenLanguage: () -> Unit = {},
-    onOpenMemory: (() -> Unit)? = null,
+    onOpenMemory: (() -> Unit)? = null, onOpenBrowser: (() -> Unit)? = null,
     onOpenAdvanced: () -> Unit = {},
     versionName: String = "",
     updateVersion: String? = null,
@@ -369,7 +369,7 @@ fun SettingsContent(
         GroupCard {
             onOpenMemory?.let {
                 ListRow(MikaIcons.Heart, stringResource(R.string.settings_memory_data), stringResource(R.string.settings_memory_sub), first = true, onClick = it) { RowChevron() }
-            }
+            } if (onOpenBrowser != null) { ListRow(MikaIcons.Globe, "Navigateur intégré", "Ouvrir le navigateur de Mika", onClick = onOpenBrowser) }
             ListRow(MikaIcons.Shield, stringResource(R.string.appaccess_title), stringResource(R.string.appaccess_row_sub), first = onOpenMemory == null, onClick = onOpenAppAccess) { RowChevron() }
         }
 

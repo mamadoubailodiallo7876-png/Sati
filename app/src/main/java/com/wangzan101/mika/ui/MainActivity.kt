@@ -366,6 +366,14 @@ val gangouChatUi by app.chat.ui.collectAsState()
     LaunchedEffect(Unit) {
         if (onboarding == null) Onboarding.start(onboardingInputs())?.let(::goOnboarding)
     } 
+    LaunchedEffect(GangouCanvasState.pendingOpenSettings) {
+        if (GangouCanvasState.pendingOpenSettings) {
+            GangouCanvasState.pendingOpenSettings = false
+            if (nav.current != Route.Settings) {
+               nav.pushFromDrawer(Route.Settings)
+            }
+        }
+    }
     val appContext = LocalContext.current
     LaunchedEffect(Unit) {
 registerAndroidCanvasPort(appContext)

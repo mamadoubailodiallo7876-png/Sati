@@ -292,8 +292,56 @@ private class GangouJsBridge(
     private val onOpenSettings: () -> Unit,
     private val onRunLinux: (suspend (String) -> CommandResult)?,
     private val onCompleteAi: (suspend (String, String) -> String)?,
+private val onOpenBrowser: (String) -> Unit,
+private val onOpenMemory: () -> Unit,
 ) {
     private val main = Handler(Looper.getMainLooper())
+    @JavascriptInterface fun openBrowser(url: String = "") { main.post { onOpenBrowser(url.trim()) } }
+    @JavascriptInterface fun openMemory() { main.post { onOpenMemory() } }
+    @JavascriptInterface fun copy(text: String) {
+        main.post {
+            runCatching {
+                val cm = appCtx.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("Gangou", text))
+                Toast.makeText(appCtx, "Copié", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    @JavascriptInterface fun toast(msg: String) {
+        if (msg.isNotBlank()) main.post { Toast.makeText(appCtx, msg.take(200), Toast.LENGTH_SHORT).show() }
+    }
+    @JavascriptInterface fun vibrate(ms: Long = 35L) {
+        main.post {
+            runCatching {
+                val dur = ms.coerceIn(10L, 400L)
+                @Suppress("DEPRECATION")
+                val v = appCtx.getSystemService(Context.VIBRATOR_SERVICE) as? android.os.Vibrator
+                if (android.os.Build.VERSION.SDK_INT >= 26) {
+                    v?.vibrate(android.os.VibrationEffect.createOneShot(dur, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    @Suppress("DEPRECATION")
+                    v?.vibrate(dur)
+                }
+            }
+        }
+    }
+    @JavascriptInterface fun writeFile(relPath: String, content: String): String {
+        return runCatching {
+            val clean = relPath.replace("..", "").trimStart('/', '\\').ifBlank { "note.txt" }
+            val base = File(appCtx.filesDir, "gangou_workspace").apply { if (!exists()) mkdirs() }
+            val f = File(base, clean)
+            f.parentFile?.mkdirs()
+            f.writeText(content, Charsets.UTF_8)
+            "OK: $clean (${content.length} chars)"
+        }.getOrElse { "ERROR: ${it.message}" }
+    }
+    @JavascriptInterface fun readFile(relPath: String): String {
+        return runCatching {
+            val clean = relPath.replace("..", "").trimStart('/', '\\')
+            val f = File(File(appCtx.filesDir, "gangou_workspace"), clean)
+            if (f.exists() && f.isFile) f.readText(Charsets.UTF_8) else ""
+        }.getOrElse { "" }
+    }
     @JavascriptInterface fun ask(prompt: String) { if (prompt.isNotBlank()) main.post { onAsk(prompt.trim()) } }
     @JavascriptInterface fun runLinux(cmd: String, callbackName: String) {
         if (cmd.isBlank() || callbackName.isBlank()) return
@@ -346,6 +394,8 @@ fun GangouCanvasScreen(
     isBusy: Boolean = false,
     onRunLinux: (suspend (String) -> CommandResult)? = null,
     onCompleteAi: (suspend (String, String) -> String)? = null,
+    onOpenBrowser: (String) -> Unit = {},
+    onOpenMemory: () -> Unit = {},
  ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) { GangouCanvasState.loadFromDisk(context) }
@@ -381,7 +431,7 @@ fun GangouCanvasScreen(
                         setBackgroundColor(android.graphics.Color.parseColor("#050811"))
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
-                        addJavascriptInterface(GangouJsBridge(ctx.applicationContext, onAskAi, onOpenSettings, onRunLinux, onCompleteAi), "GangouBridge")
+                        addJavascriptInterface(GangouJsBridge(ctx.applicationContext, onAskAi, onOpenSettings, onRunLinux, onCompleteAi, onOpenBrowser, onOpenMemory), "GangouBridge")
                         @Suppress("DEPRECATION")
                         settings.databaseEnabled = true
                         settings.useWideViewPort = true

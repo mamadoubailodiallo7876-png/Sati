@@ -1,7 +1,7 @@
 ---
 name: configure-mika
 display: Modifier les paramètres de Gangou
-description: À utiliser lorsque l'utilisateur demande à Gangou de consulter ou modifier ses propres paramètres (hors modèles, clés API et suppression de données).
+description: Voir et modifier les réglages de Gangou.
 ---
 
 # Paramètres de Gangou

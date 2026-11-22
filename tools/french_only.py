@@ -131,13 +131,13 @@ def replace_mika_and_zh():
         return re.sub(pat, lambda m: m.group(1) or "Gangou", txt)
     configs = [("app/src/main/res", (".xml",), (), False, False), ("core/src/main/resources/prompts", (".md", ".txt", ".py", ".json", ".xml"), ("configure-mika",), True, True), ("core/src/main/resources/skills", (".md", ".txt", ".py", ".json", ".xml"), ("configure-mika",), True, True)]
     for base, exts, ex, do_rep, do_zh in configs:
-        if not os.path.isdir(base): continue
+    if not os.path.isdir(base): continue
        for r, _, files in os.walk(base):
            for fn in files:
                if not fn.endswith(exts): continue
                    p = os.path.join(r, fn); t = open(p, "r", encoding="utf-8").read(); nt = t
                     if do_rep:
-                   for zh, fr in REPLACEMENTS: nt = nt.replace(zh, fr)
+                       for zh, fr in REPLACEMENTS: nt = nt.replace(zh, fr)
                     nt = sub_mika(nt, ex)
                     if do_zh: nt = re.sub(r"[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]+", "", nt)
                     if nt != t: open(p, "w", encoding="utf-8").write(nt)
